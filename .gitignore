@@ -1,0 +1,27 @@
+# Python
+venv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+db.sqlite3
+
+# React/node
+node_modules/
+/build/
+/.pnp
+.pnp.js
+
+# Development environments
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Log datoteke
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
