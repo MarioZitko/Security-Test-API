@@ -1,77 +1,77 @@
 # Security Test API
 
-Security Test API je web aplikacija dizajnirana za automatizirano testiranje sigurnosnih ranjivosti web API-ja, s fokusom na OWASP Top 10 ranjivosti. Projekt kombinira moć Flask-a za backend logiku i React-a za interaktivno korisničko sučelje.
+Security Test API is a web application designed for automated testing of security vulnerabilities in web APIs, with a focus on OWASP Top 10 vulnerabilities. The project combines the power of Flask for backend logic and React for interactive user interface.
 
-## Značajke
+## Features
 
-- **Automatizirano Testiranje Ranjivosti:** Podržava detekciju ključnih sigurnosnih ranjivosti definiranih u OWASP Top 10.
-- **Interaktivno Korisničko Sučelje:** Omogućava korisnicima jednostavno upravljanje testovima i pregled rezultata.
-- **Prilagodljivi Testovi:** Korisnici mogu odabrati specifične ranjivosti koje žele testirati.
+- **Automated Vulnerability Testing:** Supports detection of key security vulnerabilities declared in OWASP Top 10.
+- **Interactive User Interface:** Enables users to easily manage tests and review results.
+- **Customizable Tests:** Users can select specific vulnerabilities they want to test.
 
-## Početak rada
+## Getting Started
 
-Da biste lokalno pokrenuli projekt, slijedite upute ispod.
+To run the project locally, follow the instructions below.
 
-### Preduvjeti
+### Requirements
 
-- Python (verzija 3.x)
-- Node.js i npm
+- Python (version 3.x)
+- Node.js and npm
 
-### Postavljanje Projekta
+### Setting Up the Project
 
-1. **Kloniranje Repozitorija**
+1. **Cloning the Repository**
 ```
 git clone https://github.com/MarioZitko/Security-Test-API.git
 cd Security-Test-API
 ```
 
-2. **Postavljanje i Aktivacija Virtualnog Okruženja**
+2. **Setting Up and configuring the Virtual Environment**
 ```
 python -m venv venv
 ```
 
-**Na Windowsu**
+**Windows**
 ```
 venv\Scripts\activate
 ```
 
-**Na Unixu ili MacOS-u**
+**Unix or MacOS**
 ```
 source venv/bin/activate
 ```
 
-3. **Instalacija Backend Ovisnosti**
+3. **Installation of Backend Dependencies**
 ```
 cd backend
 pip install -r requirements.txt
 ```
 
-4. **Pokretanje Flask Aplikacije**
+4. **Running the Flask application**
 ```
 flask run
 ```
 
-5. **Instalacija Frontend Ovisnosti**
-U novom terminalu/tabu:
+5. **Installation of Frontend Dependencies**
+In a new Terminal/Tab:
 ```
 cd frontend
 npm install
 ```
 
-6. **Pokretanje React Aplikacije**
+6. **Running the React Application**
 ```
 npm start
 ```
-Aplikacija bi trebala biti dostupna na `http://localhost:3000`, dok je Flask API dostupan na `http://localhost:5000`.
+The application should be accessible at `http://localhost:3000`, while the Flask API is available at `http://localhost:5000`.
 
-## Korištenje Aplikacije
+## Using the Application
 
-- Otvorite web preglednik i posjetite `http://localhost:3000`.
-- Unesite URL API-ja koji želite testirati i odaberite vrste ranjivosti za testiranje.
-- Pregledajte rezultate i preporuke za mitigaciju otkrivenih ranjivosti.
+- Open a web browser and visit `http://localhost:3000`.
+- Enter the URL of the API you want to test and select the types of vulnerabilities to test.
+- Review the results and recommendations for mitigating the discovered vulnerabilities.
 
-## Licenca
+## License
 
-Ovaj projekt je licenciran pod MIT Licencom - pogledajte [LICENSE.md](LICENSE.md) datoteku za detalje.
+This project is licensed under the MIT License - see the LICENSE.md file for details.
 
-Projektni Link: [https://github.com/MarioZitko/Security-Test-API](https://github.com/MarioZitko/Security-Test-API)
+Project Link: https://github.com/MarioZitko/Security-Test-API
