@@ -29,9 +29,6 @@ const Navbar: React.FC<Props> = ({ isAdmin }) => {
 						<Button color="inherit" component={Link} to="/config">
 							Config
 						</Button>
-						<Button color="inherit" component={Link} to="/about">
-							About Us
-						</Button>
 						{isAdmin && (
 							<Button color="inherit" component={Link} to="/admin">
 								Admin Dashboard
