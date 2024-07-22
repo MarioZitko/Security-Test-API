@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
 				<SearchBar />
 				<FileDropArea />
 			</main>
-		</div>
+		</div>	
 	);
 }
 
