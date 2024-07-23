@@ -1,15 +1,20 @@
 import axios from "axios";
 
-const baseURL = "http://localhost:8000/api/";
-
-const instance = axios.create({
-	baseURL: baseURL,
+const axiosInstance = axios.create({
+	baseURL: "http://localhost:8000/api/", // Update this URL based on your actual API endpoint
 });
 
-// Insert token from localStorage if available
-const token = localStorage.getItem("token");
-if (token) {
-	instance.defaults.headers.common["Authorization"] = `Token ${token}`;
-}
+axiosInstance.interceptors.request.use(
+	(config) => {
+		const token = localStorage.getItem("token");
+		if (token) {
+			config.headers["Authorization"] = `Token ${token}`;
+		}
+		return config;
+	},
+	(error) => {
+		return Promise.reject(error);
+	}
+);
 
-export default instance;
+export default axiosInstance;
