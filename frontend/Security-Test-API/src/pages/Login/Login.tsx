@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { Link as RouterLink } from "react-router-dom";
 import {
 	Box,
 	Button,
@@ -7,6 +8,7 @@ import {
 	Typography,
 	Paper,
 	CircularProgress,
+	Link,
 } from "@mui/material";
 
 const Login: React.FC = () => {
@@ -75,6 +77,12 @@ const Login: React.FC = () => {
 					>
 						{loading ? <CircularProgress size={24} /> : "Log In"}
 					</Button>
+					<Typography sx={{ mt: 2, textAlign: "center" }}>
+						Don't have an account?{" "}
+						<Link component={RouterLink} to="/register">
+							Register
+						</Link>
+					</Typography>
 				</form>
 			</Paper>
 		</Box>
