@@ -1,6 +1,5 @@
 import React, {
 	createContext,
-	useContext,
 	useState,
 	ReactNode,
 	useEffect,
@@ -16,15 +15,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-	async function login(email: string, password: string): Promise<void> {
-		const response = await axios.post("auth/login/", { email, password });
-		const { token, user } = response.data;
+	async function login(username: string, password: string): Promise<void> {
+		const response = await axios.post("auth/login/", { username, password });
+		const { key: token, user } = response.data;
+		setCurrentUser(user);
 		localStorage.setItem("token", token);
 		axios.defaults.headers["Authorization"] = `Token ${token}`;
-		setCurrentUser(user);
 	}
 
-	function logout(): void {
+	async function logout(): Promise<void> {
+		await axios.post("/auth/logout/");
 		setCurrentUser(null);
 		localStorage.removeItem("token");
 		delete axios.defaults.headers["Authorization"];
@@ -48,7 +48,3 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 		</AuthContext.Provider>
 	);
 };
-
-export function useAuth() {
-	return useContext(AuthContext);
-}

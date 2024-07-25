@@ -1,13 +1,11 @@
 // src/components/Navbar.tsx
-import React from "react";
 import { AppBar, Toolbar, Typography, Button, Grid } from "@mui/material";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth"; // Adjust path as necessary
 
-interface Props {
-	isAdmin: boolean;
-}
+const Navbar = () => {
+	const { currentUser, logout } = useAuth(); // Use authentication context
 
-const Navbar: React.FC<Props> = ({ isAdmin }) => {
 	return (
 		<AppBar position="static" color="primary">
 			<Toolbar>
@@ -29,14 +27,23 @@ const Navbar: React.FC<Props> = ({ isAdmin }) => {
 						<Button color="inherit" component={Link} to="/config">
 							Config
 						</Button>
-						{isAdmin && (
-							<Button color="inherit" component={Link} to="/admin">
-								Admin Dashboard
+						{currentUser ? (
+							<>
+								<Typography
+									component="span"
+									style={{ color: "white", margin: "0 10px" }}
+								>
+									Welcome, {currentUser.username}
+								</Typography>
+								<Button color="inherit" onClick={logout}>
+									Logout
+								</Button>
+							</>
+						) : (
+							<Button color="inherit" component={Link} to="/login">
+								Login
 							</Button>
 						)}
-						<Button color="inherit" component={Link} to="/login">
-							Login
-						</Button>
 					</Grid>
 				</Grid>
 			</Toolbar>

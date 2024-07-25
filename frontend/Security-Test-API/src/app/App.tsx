@@ -9,7 +9,7 @@ import Dashboard from "../pages/Dashboard/Dashboard"; // Assuming you have a Das
 const App: React.FC = () => {
 	return (
 		<AuthProvider>
-			<Navbar isAdmin={true} />
+			<Navbar />
 			<Routes>
 				<Route path="/login" element={<Login />} />
 				<Route path="/register" element={<Register />} />

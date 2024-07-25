@@ -10,20 +10,22 @@ import {
 	CircularProgress,
 	Link,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
-	const [email, setEmail] = useState<string>("");
+	const [username, setUsername] = useState<string>("");
 	const [password, setPassword] = useState<string>("");
 	const { login } = useAuth();
 	const [error, setError] = useState<string>("");
 	const [loading, setLoading] = useState<boolean>(false);
+	const navigate = useNavigate(); // Initiate useNavigate
 
 	async function handleSubmit(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		setLoading(true);
 		try {
-			setError(""); // Clear any existing errors
-			await login(email, password); // Attempt to log in
+			login(username, password); // Attempt to log in
+			navigate("/", { replace: true });
 		} catch (err: any) {
 			// Assuming err.response.data contains the error message
 			// Adjust based on your API response structure
@@ -48,13 +50,13 @@ const Login: React.FC = () => {
 				{error && <Typography color="error">{error}</Typography>}
 				<form onSubmit={handleSubmit} noValidate>
 					<TextField
-						label="Email"
-						type="email"
+						label="Username"
+						type="string"
 						variant="outlined"
 						fullWidth
 						margin="normal"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
+						value={username}
+						onChange={(e) => setUsername(e.target.value)}
 						required
 					/>
 					<TextField
