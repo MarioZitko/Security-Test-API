@@ -32,6 +32,9 @@ const Navbar = () => {
 						<Button color="inherit" component={Link} to="/config">
 							Config
 						</Button>
+						<Button color="inherit" component={Link} to="/result">
+							Results
+						</Button>
 						{currentUser ? (
 							<>
 								<Typography

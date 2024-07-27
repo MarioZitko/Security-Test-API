@@ -1,10 +1,18 @@
 from django.db import models
 from django.conf import settings
+from . import security_checks
 
 class Test(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     test_function = models.CharField(max_length=100, null=True)
+    
+    def run_test(self, api_url):
+        if hasattr(security_checks, self.test_function):
+            test_func = getattr(security_checks, self.test_function)
+            status, detail = test_func(api_url)
+            return status, detail
+        return "Error", "Test function not implemented."
 
 class API(models.Model):
     name = models.CharField(max_length=255)
