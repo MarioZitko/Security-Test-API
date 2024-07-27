@@ -1,0 +1,92 @@
+[
+	{
+		"model": "security_tests.test",
+		"pk": 1,
+		"fields": {
+			"name": "SQL Injection",
+			"description": "Tests if API endpoints are vulnerable to SQL injection, a common attack vector.",
+			"test_function": "test_sql_injection"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 2,
+		"fields": {
+			"name": "XSS",
+			"description": "Tests for Cross-Site Scripting vulnerabilities where malicious scripts are injected into trusted websites.",
+			"test_function": "test_xss"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 3,
+		"fields": {
+			"name": "CSRF",
+			"description": "Checks if the API is susceptible to Cross-Site Request Forgery, allowing unauthorized commands from a trusted user.",
+			"test_function": "test_csrf"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 4,
+		"fields": {
+			"name": "Command Injection",
+			"description": "Tests if backend systems are vulnerable to OS command injections.",
+			"test_function": "test_command_injection"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 5,
+		"fields": {
+			"name": "Broken Authentication",
+			"description": "Simulates automated attacks to identify weak spots in authentication mechanisms.",
+			"test_function": "test_broken_authentication"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 6,
+		"fields": {
+			"name": "Sensitive Data Exposure",
+			"description": "Tests to see how well sensitive data is protected during transmission and at rest.",
+			"test_function": "test_sensitive_data_exposure"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 7,
+		"fields": {
+			"name": "XML External Entities (XXE)",
+			"description": "Looks for vulnerabilities that allow an attacker to interfere with an application's processing of XML data.",
+			"test_function": "test_xxe"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 8,
+		"fields": {
+			"name": "Insecure Deserialization",
+			"description": "Tests for flaws that could lead to remote code execution, replay attacks, or injection attacks.",
+			"test_function": "test_insecure_deserialization"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 9,
+		"fields": {
+			"name": "Security Misconfiguration",
+			"description": "Tests for commonly misconfigured security settings that might make the API vulnerable.",
+			"test_function": "test_security_misconfiguration"
+		}
+	},
+	{
+		"model": "security_tests.test",
+		"pk": 10,
+		"fields": {
+			"name": "Components with Known Vulnerabilities",
+			"description": "Scans for components or libraries that are outdated or have known vulnerabilities.",
+			"test_function": "test_components_with_vulnerabilities"
+		}
+	}
+]

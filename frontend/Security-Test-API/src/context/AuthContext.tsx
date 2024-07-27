@@ -17,10 +17,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
 	async function login(username: string, password: string): Promise<void> {
 		const response = await axios.post("auth/login/", { username, password });
-		const { key: token, user } = response.data;
-		setCurrentUser(user);
+		const { key: token } = response.data;
 		localStorage.setItem("token", token);
 		axios.defaults.headers["Authorization"] = `Token ${token}`;
+		if (token) {
+			axios
+				.get<User>("auth/user/")
+				.then((response) => {
+					setCurrentUser(response.data);
+				})
+				.catch(logout);
+		}
 	}
 
 	async function logout(): Promise<void> {
