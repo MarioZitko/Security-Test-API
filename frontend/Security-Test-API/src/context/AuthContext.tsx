@@ -15,20 +15,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-	async function login(username: string, password: string): Promise<void> {
-		const response = await axios.post("auth/login/", { username, password });
-		const { key: token } = response.data;
-		localStorage.setItem("token", token);
-		axios.defaults.headers["Authorization"] = `Token ${token}`;
-		if (token) {
-			axios
-				.get<User>("auth/user/")
-				.then((response) => {
-					setCurrentUser(response.data);
-				})
-				.catch(logout);
-		}
-	}
+async function login(username: string, password: string): Promise<void> {
+    const response = await axios.post(`auth/login/`, { username, password });
+    const { key: token } = response.data;
+    localStorage.setItem("token", token);
+    axios.defaults.headers["Authorization"] = `Token ${token}`;
+    if (token) {
+        axios.get<User>("auth/user/").then((response) => {
+            setCurrentUser(response.data);
+        })
+    }
+}
 
 	async function logout(): Promise<void> {
 		await axios.post("/auth/logout/");
@@ -45,7 +42,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 				.then((response) => {
 					setCurrentUser(response.data);
 				})
-				.catch(logout);
 		}
 	}, []);
 

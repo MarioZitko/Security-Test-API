@@ -5,6 +5,8 @@ import { AuthProvider } from "../context/AuthContext";
 import Login from "../pages/Login/Login";
 import Register from "../pages/Login/Register";
 import Dashboard from "../pages/Dashboard/Dashboard"; // Assuming you have a Dashboard component
+import Results from "../pages/Results/Results";
+import Tests from "../pages/Tests/Tests";
 
 const App: React.FC = () => {
 	return (
@@ -14,6 +16,8 @@ const App: React.FC = () => {
 				<Route path="/login" element={<Login />} />
 				<Route path="/register" element={<Register />} />
 				<Route path="/" element={<Dashboard />} />
+				<Route path="/results" element={<Results />} />
+				<Route path="/tests" element={<Tests />} />
 			</Routes>
 		</AuthProvider>
 	);

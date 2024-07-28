@@ -28,9 +28,7 @@ router.register(r'results', ResultViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include([
-        path('', include(router.urls)),
-        path('auth/', include('dj_rest_auth.urls')),
-        path('auth/registration/', include('dj_rest_auth.registration.urls'))
-    ]))
+    path('api/', include(router.urls)),
+    path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls'))
 ]

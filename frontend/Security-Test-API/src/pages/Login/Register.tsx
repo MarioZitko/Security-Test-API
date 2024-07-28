@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "../../utils/axiosConfig";
 import { Link as RouterLink } from "react-router-dom";
+import { ApiError } from "../../api/types";
 
 const Register: React.FC = () => {
 	const [username, setUsername] = useState("");
@@ -35,8 +36,9 @@ const Register: React.FC = () => {
 				password,
 			});
 			navigate("/login");
-		} catch (err: any) {
-			const message = err.response?.data?.message || "Registration failed";
+		} catch (err: unknown) {
+			const error = err as ApiError
+			const message = error.message || "Registration failed";
 			setError(message);
 			console.error("Registration error:", message);
 		}

@@ -26,13 +26,13 @@ const Navbar = () => {
 						</Typography>
 					</Grid>
 					<Grid item>
-						<Button color="inherit" component={Link} to="/test">
+						<Button color="inherit" component={Link} to="/tests">
 							Tests
 						</Button>
 						<Button color="inherit" component={Link} to="/config">
 							Config
 						</Button>
-						<Button color="inherit" component={Link} to="/result">
+						<Button color="inherit" component={Link} to="/results">
 							Results
 						</Button>
 						{currentUser ? (

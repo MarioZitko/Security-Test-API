@@ -24,7 +24,7 @@ class API(models.Model):
 class Result(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     api = models.ForeignKey(API, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50)
-    detail = models.TextField()
+    status = models.CharField(max_length=50, default="")
+    detail = models.TextField(default="")
     executed_at = models.DateTimeField(auto_now_add=True)
     executed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

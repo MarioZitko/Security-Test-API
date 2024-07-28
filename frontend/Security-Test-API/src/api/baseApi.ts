@@ -6,6 +6,7 @@ import axios, {
 } from "axios";
 import { ApiResponse, ApiError, ApiErrorResponse } from "./types";
 
+
 class BaseAPI {
 	protected axiosInstance: AxiosInstance;
 
@@ -22,8 +23,16 @@ class BaseAPI {
 
 	private initializeInterceptors = (): void => {
 		this.axiosInstance.interceptors.response.use(
-			this.handleResponse,
-			this.handleError
+			(config) => {
+				const token = localStorage.getItem("token");
+				if (token) {
+					config.headers["Authorization"] = `Token ${token}`;
+				}
+				return config;
+			},
+			(error) => {
+				return Promise.reject(error);
+			}
 		);
 	};
 

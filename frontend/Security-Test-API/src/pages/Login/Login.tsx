@@ -11,6 +11,7 @@ import {
 	Link,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { ApiError } from "../../api/types";
 
 const Login: React.FC = () => {
 	const [username, setUsername] = useState<string>("");
@@ -26,10 +27,9 @@ const Login: React.FC = () => {
 		try {
 			login(username, password); // Attempt to log in
 			navigate("/", { replace: true });
-		} catch (err: any) {
-			// Assuming err.response.data contains the error message
-			// Adjust based on your API response structure
-			const message = err.response?.data?.message || "Failed to log in";
+		} catch (error: unknown) {
+			const err = error as ApiError
+			const message = err.message || "Failed to log in";
 			setError(message);
 			console.error("Login error:", message); // Optionally log error to console
 		}

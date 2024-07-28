@@ -20,7 +20,7 @@ export default class TestsApiClient extends BaseApi {
 	}
 
 	public async getTests(): Promise<ApiResponse<ITest[]>> {
-		const response = await this.axiosInstance.get<ApiResponse<ITest[]>>("/");
+		const response = await this.axiosInstance.get<ApiResponse<ITest[]>>("/test");
 		return response.data;
 	}
 }
