@@ -9,7 +9,7 @@ export default class TestsApiClient extends BaseApi {
 	private static instance: TestsApiClient;
 
 	private constructor() {
-		super("/test");
+		super("tests");
 	}
 
 	public static getInstance() {
@@ -20,7 +20,7 @@ export default class TestsApiClient extends BaseApi {
 	}
 
 	public async getTests(): Promise<ApiResponse<ITest[]>> {
-		const response = await this.axiosInstance.get<ApiResponse<ITest[]>>("/test");
+		const response = await this.axiosInstance.get<ApiResponse<ITest[]>>("");
 		return response.data;
 	}
 }

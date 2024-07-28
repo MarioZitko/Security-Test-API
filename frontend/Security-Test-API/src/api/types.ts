@@ -8,6 +8,6 @@ export interface ApiError {
 }
 
 export interface ApiErrorResponse {
-	message: string; // Standard error message field
+	message?: string; // Standard error message field
 	// Include other fields that might be expected in the error response
 }

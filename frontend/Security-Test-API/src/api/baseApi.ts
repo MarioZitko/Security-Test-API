@@ -1,18 +1,19 @@
 import axios, {
 	AxiosInstance,
 	AxiosRequestConfig,
-	AxiosResponse,
 	AxiosError,
 } from "axios";
-import { ApiResponse, ApiError, ApiErrorResponse } from "./types";
+import { ApiError, ApiErrorResponse, ApiResponse } from "./types";
 
+// Update this URL based on your actual API endpoint
+const apiUrl: string = "http://localhost:8000/api/";
 
 class BaseAPI {
 	protected axiosInstance: AxiosInstance;
 
-	constructor(baseURL: string) {
+	constructor(moduleUrl: string) {
 		this.axiosInstance = axios.create({
-			baseURL,
+			baseURL: apiUrl + moduleUrl,
 			headers: {
 				"Content-Type": "application/json",
 			},
@@ -22,7 +23,8 @@ class BaseAPI {
 	}
 
 	private initializeInterceptors = (): void => {
-		this.axiosInstance.interceptors.response.use(
+		// Correctly setting request interceptors
+		this.axiosInstance.interceptors.request.use(
 			(config) => {
 				const token = localStorage.getItem("token");
 				if (token) {
@@ -30,26 +32,30 @@ class BaseAPI {
 				}
 				return config;
 			},
-			(error) => {
-				return Promise.reject(error);
-			}
+			(error) => Promise.reject(error)
+		);
+
+		// Setting response interceptors to handle data and errors
+		this.axiosInstance.interceptors.response.use(
+			(response) => response,
+			(error) => this.handleError(error)
 		);
 	};
 
-	private handleResponse = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-		return response.data.data;
+	// Assuming responses are directly the data type T
+	private handleResponse = <T>(response: ApiResponse<T>): T => {
+		return response.data;
 	};
 
 	protected handleError = (
 		error: AxiosError<ApiErrorResponse>
 	): Promise<ApiError> => {
-		// Default message
 		let errorMessage = "An unexpected error occurred";
 
+		// Assert the type of error.response.data as ApiErrorResponse
 		if (error.response && error.response.data) {
-			// Now TypeScript knows `message` exists on `error.response.data`
-			errorMessage =
-				error.response.data.message || "Server responded with an error";
+			const errorData = error.response.data as ApiErrorResponse;
+			errorMessage = errorData.message || "Server responded with an error";
 		} else if (error.request) {
 			errorMessage = "No response from server. Check your network connection.";
 		}
@@ -59,9 +65,7 @@ class BaseAPI {
 	};
 
 	public get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-		return this.axiosInstance
-			.get<ApiResponse<T>>(url, config)
-			.then(this.handleResponse);
+		return this.axiosInstance.get<T>(url, config).then(this.handleResponse);
 	}
 
 	public post<T>(
@@ -70,7 +74,7 @@ class BaseAPI {
 		config?: AxiosRequestConfig
 	): Promise<T> {
 		return this.axiosInstance
-			.post<ApiResponse<T>>(url, data, config)
+			.post<T>(url, data, config)
 			.then(this.handleResponse);
 	}
 
@@ -80,14 +84,12 @@ class BaseAPI {
 		config?: AxiosRequestConfig
 	): Promise<T> {
 		return this.axiosInstance
-			.put<ApiResponse<T>>(url, data, config)
+			.put<T>(url, data, config)
 			.then(this.handleResponse);
 	}
 
 	public delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-		return this.axiosInstance
-			.delete<ApiResponse<T>>(url, config)
-			.then(this.handleResponse);
+		return this.axiosInstance.delete<T>(url, config).then(this.handleResponse);
 	}
 }
 
