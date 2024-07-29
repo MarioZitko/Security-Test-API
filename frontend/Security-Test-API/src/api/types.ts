@@ -1,6 +1,7 @@
 // src/api/types.ts
 export interface ApiResponse<T> {
 	data: T;
+	key?: string;
 }
 
 export interface ApiError {

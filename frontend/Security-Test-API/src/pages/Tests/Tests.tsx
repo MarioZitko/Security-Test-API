@@ -14,16 +14,36 @@ import {
 
 const Tests = () => {
 	const [tests, setTests] = useState<ITest[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-    const testsApiClient = TestsApiClient.getInstance();
+	const testsApiClient = TestsApiClient.getInstance();
 
 	useEffect(() => {
 		const loadTests = async () => {
-			const loadedTests = await testsApiClient.getTests();
-			setTests(loadedTests.data);
+			try {
+				const loadedTests = await testsApiClient.getTests();
+				setTests(loadedTests.data);
+			} catch (err) {
+				setError("Failed to load tests");
+			} finally {
+				setLoading(false);
+			}
 		};
 		loadTests();
-	}, []);
+	}, [testsApiClient]);
+
+	if (loading) {
+		return <Typography variant="h6">Loading...</Typography>;
+	}
+
+	if (error) {
+		return (
+			<Typography variant="h6" color="error">
+				{error}
+			</Typography>
+		);
+	}
 
 	return (
 		<TableContainer component={Paper} style={{ margin: 20 }}>

@@ -18,20 +18,30 @@ class UsersApiClient extends BaseAPI {
 	}
 
 	async login(username: string, password: string): Promise<string> {
-		const response = await this.post<ApiResponse<{ key: string }>>(
+		const response = await this.axiosInstance.post<ApiResponse<{ key: string }>>(
 			"auth/login/",
 			{ username, password }
 		);
+
+		if (!response.data.key) {
+			throw new Error("Login response did not include a key.");
+		}
+
 		return response.data.key;
 	}
 
 	async fetchCurrentUser(): Promise<User> {
-		const response = await this.get<ApiResponse<User>>("auth/user/");
+		const response = await this.axiosInstance.get<ApiResponse<User>>("auth/user/");
+
+		if (!response.data) {
+		throw new Error("Fetch current user response did not include user data.");
+		}
+
 		return response.data;
 	}
 
 	async logout(): Promise<void> {
-		await this.post("auth/logout/");
+		await this.axiosInstance.post("auth/logout/");
 	}
 }
 

@@ -1,7 +1,7 @@
 import axios, {
 	AxiosInstance,
-	AxiosRequestConfig,
 	AxiosError,
+	AxiosResponse,
 } from "axios";
 import { ApiError, ApiErrorResponse, ApiResponse } from "./types";
 
@@ -42,9 +42,11 @@ class BaseAPI {
 		);
 	};
 
-	// Assuming responses are directly the data type T
-	private handleResponse = <T>(response: ApiResponse<T>): T => {
-		return response.data;
+	// Adjust handleResponse to return the full response
+	private handleResponse = <T>(
+		response: AxiosResponse<ApiResponse<T>>
+	): AxiosResponse<ApiResponse<T>> => {
+		return response;
 	};
 
 	protected handleError = (
@@ -63,34 +65,6 @@ class BaseAPI {
 		const apiError: ApiError = { message: errorMessage };
 		return Promise.reject(apiError);
 	};
-
-	public get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-		return this.axiosInstance.get<T>(url, config).then(this.handleResponse);
-	}
-
-	public post<T>(
-		url: string,
-		data?: object,
-		config?: AxiosRequestConfig
-	): Promise<T> {
-		return this.axiosInstance
-			.post<T>(url, data, config)
-			.then(this.handleResponse);
-	}
-
-	public put<T>(
-		url: string,
-		data?: object,
-		config?: AxiosRequestConfig
-	): Promise<T> {
-		return this.axiosInstance
-			.put<T>(url, data, config)
-			.then(this.handleResponse);
-	}
-
-	public delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-		return this.axiosInstance.delete<T>(url, config).then(this.handleResponse);
-	}
 }
 
 export default BaseAPI;
