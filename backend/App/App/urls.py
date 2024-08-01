@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from accounts.views import UserViewSet
-from security_tests.views import TestViewSet, APIViewSet, ResultViewSet
+from security_tests.views import TestViewSet, APIViewSet, ResultViewSet, run_tests_for_api, run_single_test, view_results
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -30,5 +30,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/auth/', include('dj_rest_auth.urls')),
-    path('api/auth/registration/', include('dj_rest_auth.registration.urls'))
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('run-tests/<int:api_id>/', run_tests_for_api, name='run-tests-for-api'),
+    path('run-test/<int:api_id>/<int:test_id>/', run_single_test, name='run-single-test'),
+    path('view-results/<int:api_id>/', view_results, name='view-results'),
 ]

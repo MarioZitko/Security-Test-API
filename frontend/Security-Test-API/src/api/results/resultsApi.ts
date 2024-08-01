@@ -23,4 +23,9 @@ export default class ResultsApiClient extends BaseApi {
 		const response = await this.axiosInstance.get<ApiResponse<IResult[]>>("/");
 		return response.data;
 	}
+
+	public async getResult(id: number): Promise<ApiResponse<IResult>> {
+		const response = await this.axiosInstance.get<ApiResponse<IResult>>(`/${id}`);
+		return response.data;
+	}
 }
