@@ -33,12 +33,19 @@ def run_tests_for_api(request, api_id):
 
 @api_view(['POST'])
 def run_single_test(request, api_id, test_id):
-    api = API.objects.get(id=api_id)
-    test = Test.objects.get(id=test_id)
-    status, detail = test.run_test(api.url)
-    result = Result(test=test, api=api, status=status, detail=detail, executed_by=api.added_by)
-    result.save()
-    return api_response(data={"testId": test.id, "status": status, "detail": detail})
+    try:
+        api = API.objects.get(id=api_id)
+        test = Test.objects.get(id=test_id)
+        status, detail = test.run_test(api.url)
+        result = Result(test=test, api=api, status=status, detail=detail, executed_by=api.added_by)
+        result.save()
+        return api_response(data={"testId": test.id, "status": status, "detail": detail})
+    except API.DoesNotExist:
+        return api_response(data=None, message="API not found.", status=404)
+    except Test.DoesNotExist:
+        return api_response(data=None, message="Test not found.", status=404)
+    except Exception as e:
+        return api_response(data=None, message=str(e), status=500)
 
 @api_view(['GET'])
 def view_results(request, api_id):
