@@ -9,7 +9,7 @@ export default class ResultsApiClient extends BaseApi {
 	private static instance: ResultsApiClient;
 
 	private constructor() {
-		super("/results");
+		super("results");
 	}
 
 	public static getInstance() {

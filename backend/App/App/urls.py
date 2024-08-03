@@ -31,7 +31,8 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('run-tests/<int:api_id>/', run_tests_for_api, name='run-tests-for-api'),
-    path('run-test/<int:api_id>/<int:test_id>/', run_single_test, name='run-single-test'),
-    path('view-results/<int:api_id>/', view_results, name='view-results'),
+    # Custom test running endpoints
+    path('api/tests/run-tests/<int:api_id>/', run_tests_for_api, name='run-tests-for-api'),
+    path('api/tests/run-test/<int:api_id>/<int:test_id>/', run_single_test, name='run-single-test'),
+    path('api/tests/view-results/<int:api_id>/', view_results, name='view-results'),
 ]

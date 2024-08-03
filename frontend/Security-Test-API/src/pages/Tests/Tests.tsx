@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import TestsApiClient from "../../api/tests/testApi";
 import ApiUrlTestApiClient from "../../api/apiUrlTest/apiUrlTestApi";
 import { ITest } from "../../api/tests/types";
+import { ITestResult } from "../../api/tests/types";
 import { IAPI } from "../../api/apiUrlTest/types";
-import { IResult } from "../../api/results/types";
 import {
 	Table,
 	TableBody,
@@ -18,6 +18,8 @@ import {
 	MenuItem,
 	FormControl,
 	InputLabel,
+	Snackbar,
+	Alert,
 } from "@mui/material";
 
 const Tests = () => {
@@ -26,7 +28,8 @@ const Tests = () => {
 	const [selectedApi, setSelectedApi] = useState<number | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [testResults, setTestResults] = useState<IResult[]>([]);
+	const [testResults, setTestResults] = useState<ITestResult[]>([]);
+	const [snackbarOpen, setSnackbarOpen] = useState(false);
 
 	const testsApiClient = TestsApiClient.getInstance();
 	const apiUrlTestApiClient = ApiUrlTestApiClient.getInstance();
@@ -55,10 +58,12 @@ const Tests = () => {
 	const handleRunTests = async () => {
 		if (selectedApi !== null) {
 			try {
-				const resultData = await testsApiClient.runTests(selectedApi);
-				setTestResults(resultData.data); // Assume backend returns results as an array
+				const resultData = await testsApiClient.runTestsForApi(selectedApi);
+				setTestResults(resultData.data);
+				setSnackbarOpen(true); // Open snackbar on success
 			} catch (err) {
-				setError("Failed to run tests");
+				handleError(err);
+				setSnackbarOpen(true); // Open snackbar on error
 			}
 		}
 	};
@@ -70,23 +75,48 @@ const Tests = () => {
 				setTestResults((prevResults) => {
 					const updatedResults = [...prevResults];
 					const resultIndex = updatedResults.findIndex(
-						(res) => res.test.id === testId
+						(res) => res.testId === testId // Ensure this matches your IResult type structure
 					);
 					if (resultIndex > -1) {
-						updatedResults[resultIndex] = result.data;
+						updatedResults[resultIndex] = result.data; // Update existing result
 					} else {
-						updatedResults.push(result.data);
+						updatedResults.push(result.data); // Add new result
 					}
 					return updatedResults;
 				});
+				setSnackbarOpen(true); // Open snackbar on success
 			} catch (err) {
-				setError(`Failed to run test ID: ${testId}`);
+				handleError(err);
+				setSnackbarOpen(true); // Open snackbar on error
 			}
 		}
 	};
 
-	const getTestResult = (testId: number): IResult | undefined => {
-		return testResults.find((result) => result.test.id === testId);
+	// Handle unknown error type
+	const handleError = (err: unknown) => {
+		if (err instanceof Error) {
+			// Check if it's an Axios error
+			const axiosError = err as any; // Typecasting because AxiosError is not directly available
+			if (
+				axiosError.response &&
+				axiosError.response.data &&
+				axiosError.response.data.detail
+			) {
+				setError(axiosError.response.data.detail);
+			} else {
+				setError(err.message);
+			}
+		} else {
+			setError("An unexpected error occurred.");
+		}
+	};
+
+	const getTestResult = (testId: number): ITestResult | undefined => {
+		return testResults.find((result) => result.testId === testId);
+	};
+
+	const handleSnackbarClose = () => {
+		setSnackbarOpen(false);
 	};
 
 	if (loading) {
@@ -159,6 +189,19 @@ const Tests = () => {
 					})}
 				</TableBody>
 			</Table>
+			{/* Snackbar for displaying success or error messages */}
+			<Snackbar
+				open={snackbarOpen}
+				autoHideDuration={6000}
+				onClose={handleSnackbarClose}
+			>
+				<Alert
+					onClose={handleSnackbarClose}
+					severity={error ? "error" : "success"}
+				>
+					{error ? error : "Operation completed successfully"}
+				</Alert>
+			</Snackbar>
 		</TableContainer>
 	);
 };
