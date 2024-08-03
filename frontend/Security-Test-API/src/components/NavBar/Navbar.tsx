@@ -2,14 +2,10 @@
 import { AppBar, Toolbar, Typography, Button, Grid } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"; // Adjust path as necessary
-import { useEffect } from "react";
 
 const Navbar = () => {
 	const { currentUser, logout } = useAuth(); // Use authentication context
 
-	useEffect(() => {
-		console.log("Navbar: Current User Changed:", currentUser);
-	}, [currentUser]); // Depend directly on currentUser
 
 	return (
 		<AppBar position="static" color="primary">
