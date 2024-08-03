@@ -70,6 +70,45 @@ def test_csrf(api_url):
     except requests.exceptions.RequestException as e:
         return "Error", f"Failed to test due to network or connection error: {str(e)}"
     
+def test_command_injection(api_url):
+    """
+    Test for Command Injection vulnerabilities.
+    
+    Args:
+        api_url (str): The URL of the API endpoint to test.
+        
+    Returns:
+        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
+    """
+    # Command injection payloads
+    payloads = [
+        "; ls",  # Unix
+        "&& dir",  # Windows
+        "| cat /etc/passwd",  # Unix
+        "| whoami",  # Unix
+        "& net user",  # Windows
+    ]
+
+    # Expected error messages for failed command execution
+    error_indicators = ["No such file or directory", "is not recognized as an internal or external command", "command not found"]
+
+    for payload in payloads:
+        try:
+            # Send the payload as part of a query parameter
+            response = requests.get(api_url, params={'input': payload})
+            
+            # Analyze response text for typical command output or error indicators
+            if any(indicator in response.text for indicator in error_indicators):
+                continue  # This indicates a failed execution, which is expected
+
+            if "root" in response.text or "Administrator" in response.text:
+                return "Vulnerable", f"Command injection possible with payload: {payload}"
+
+        except requests.exceptions.RequestException as e:
+            return "Error", f"Failed to test due to network or connection error: {str(e)}"
+    
+    return "Safe", "No command injection vulnerabilities detected."
+    
 def test_broken_authentication(api_url):
     """
     Test for Broken Authentication vulnerabilities.

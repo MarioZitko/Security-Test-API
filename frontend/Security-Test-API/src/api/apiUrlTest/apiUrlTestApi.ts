@@ -25,6 +25,21 @@ class ApiUrlTestApiClient extends BaseAPI {
 		const response = await this.axiosInstance.get<ApiResponse<IAPI>>(`/${id}`);
 		return response.data;
 	}
+
+	public async createAPI(data: IAPI): Promise<ApiResponse<IAPI>> {
+		const response = await this.axiosInstance.post<ApiResponse<IAPI>>("", data);
+		return response.data;
+	}
+
+	public async updateAPI(id: number, data: IAPI): Promise<ApiResponse<IAPI>> {
+		const response = await this.axiosInstance.put<ApiResponse<IAPI>>(`/${id}`,data);
+		return response.data;
+	}
+
+	public async deleteAPI(id: number): Promise<ApiResponse<null>> {
+		const response = await this.axiosInstance.delete<ApiResponse<null>>(`/${id}`);
+		return response.data;
+	}
 }
 
 export default ApiUrlTestApiClient;

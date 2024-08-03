@@ -7,6 +7,7 @@ import Register from "../pages/Login/Register";
 import Dashboard from "../pages/Dashboard/Dashboard"; // Assuming you have a Dashboard component
 import Results from "../pages/Results/Results";
 import Tests from "../pages/Tests/Tests";
+import ApiConfig from "../pages/ApiConfig/ApiConfig"
 
 const App: React.FC = () => {
 	return (
@@ -18,6 +19,7 @@ const App: React.FC = () => {
 				<Route path="/" element={<Dashboard />} />
 				<Route path="/results" element={<Results />} />
 				<Route path="/tests" element={<Tests />} />
+				<Route path="/apiconfig" element={<ApiConfig />} />
 			</Routes>
 		</AuthProvider>
 	);

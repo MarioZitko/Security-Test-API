@@ -30,7 +30,7 @@ const Navbar = () => {
 							Tests
 						</Button>
 						<Button color="inherit" component={Link} to="/apiconfig">
-							App Config
+							Api Config
 						</Button>
 						<Button color="inherit" component={Link} to="/results">
 							Results
