@@ -9,4 +9,5 @@ export interface IResult {
 	};
 	status: string;
 	detail: string;
+	executed_at: string;
 }

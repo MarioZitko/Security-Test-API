@@ -11,6 +11,7 @@ import {
 	Paper,
 	Typography,
 } from "@mui/material";
+import { format } from "date-fns";
 
 const Results = () => {
 	const [results, setResults] = useState<IResult[]>([]);
@@ -38,6 +39,7 @@ const Results = () => {
 						<TableCell>API Name</TableCell>
 						<TableCell>Status</TableCell>
 						<TableCell>Details</TableCell>
+						<TableCell>Executed</TableCell>
 					</TableRow>
 				</TableHead>
 				<TableBody>
@@ -47,6 +49,9 @@ const Results = () => {
 							<TableCell>{result.api.name}</TableCell>
 							<TableCell>{result.status}</TableCell>
 							<TableCell>{result.detail}</TableCell>
+							<TableCell>
+								{format(new Date(result.executed_at), "HH:mm:ss | yyyy-MM-dd")}
+							</TableCell>
 						</TableRow>
 					))}
 				</TableBody>
