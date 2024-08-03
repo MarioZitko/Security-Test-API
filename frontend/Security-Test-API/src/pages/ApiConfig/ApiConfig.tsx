@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import ApiUrlTestApiClient from "../../api/apiUrlTest/apiUrlTestApi";
 import { IAPI } from "../../api/apiUrlTest/types";
+import UsersApiClient from "../../api/users/usersApi";
+import { IUser } from "../../context/types";
 import {
 	Table,
 	TableBody,
@@ -27,11 +29,21 @@ const Apis = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [openDialog, setOpenDialog] = useState(false);
-	const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+    const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+    const [currentUser, setCurrentUser] = useState<IUser | null>(null);
 
 	const apiApiClient = ApiUrlTestApiClient.getInstance();
+	const userApiClient = UsersApiClient.getInstance();
 
-	useEffect(() => {
+    useEffect(() => {
+        const loadCurrentUser = async () => {
+            try {
+                const userResponse = await userApiClient.fetchCurrentUser();
+                setCurrentUser(userResponse);
+            } catch (err) {
+                console.error("Failed to load current user", err);
+            }
+        };
 		const loadAPIs = async () => {
 			try {
 				const loadedApis = await apiApiClient.getAPIs();
@@ -41,13 +53,24 @@ const Apis = () => {
 			} finally {
 				setLoading(false);
 			}
-		};
-
+        };
+        
+        loadCurrentUser();
 		loadAPIs();
 	}, []);
 
-	const handleOpenDialog = (api?: IAPI) => {
-		setSelectedApi(api || { id: 0, name: "", url: "", description: "" });
+    const handleOpenDialog = (api?: IAPI) => {
+        if (currentUser) {
+		setSelectedApi(
+			api || {
+				id: 0,
+				name: "",
+				url: "",
+				description: "",
+				added_by: currentUser.pk,
+			}
+		);
+        }
 		setOpenDialog(true);
 	};
 
@@ -57,16 +80,21 @@ const Apis = () => {
 	};
 
 	const handleSaveApi = async () => {
-		if (!selectedApi) return;
+		if (!selectedApi || !currentUser) return;
+
+		const apiData: IAPI = {
+			...selectedApi,
+			added_by: currentUser.pk,
+		};
 
 		try {
 			if (selectedApi.id) {
 				// Update existing API
-				await apiApiClient.updateAPI(selectedApi.id, selectedApi);
+				await apiApiClient.updateAPI(selectedApi.id, apiData);
 				setSnackbarMessage("API updated successfully");
 			} else {
 				// Create new API
-				const response = await apiApiClient.createAPI(selectedApi);
+				const response = await apiApiClient.createAPI(apiData);
 				setApis((prevApis) => [...prevApis, response.data]);
 				setSnackbarMessage("API created successfully");
 			}

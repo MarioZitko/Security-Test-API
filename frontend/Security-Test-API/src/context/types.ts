@@ -1,12 +1,12 @@
 
-export interface User {
-	id: number;
+export interface IUser {
+	pk: number;
 	username: string;
 	email: string;
 }
 
 export interface AuthContextType {
-	currentUser: User | null;
+	currentUser: IUser | null;
 	login: (email: string, password: string) => Promise<void>;
 	logout: () => void;
 }

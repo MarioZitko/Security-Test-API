@@ -1,7 +1,7 @@
 // UTILITY
 import BaseAPI from "../baseApi";
 import { ApiResponse } from "../types";
-import { User } from "../../context/types";
+import { IUser } from "../../context/types";
 
 class UsersApiClient extends BaseAPI {
 	private static instance: UsersApiClient;
@@ -18,10 +18,9 @@ class UsersApiClient extends BaseAPI {
 	}
 
 	async login(username: string, password: string): Promise<string> {
-		const response = await this.axiosInstance.post<ApiResponse<{ key: string }>>(
-			"auth/login/",
-			{ username, password }
-		);
+		const response = await this.axiosInstance.post<
+			ApiResponse<{ key: string }>
+		>("auth/login/", { username, password });
 
 		if (!response.data.key) {
 			throw new Error("Login response did not include a key.");
@@ -30,11 +29,13 @@ class UsersApiClient extends BaseAPI {
 		return response.data.key;
 	}
 
-	async fetchCurrentUser(): Promise<User> {
-		const response = await this.axiosInstance.get<ApiResponse<User>>("auth/user/");
+	async fetchCurrentUser(): Promise<IUser> {
+		const response = await this.axiosInstance.get<ApiResponse<IUser>>(
+			"auth/user/"
+		);
 
 		if (!response.data) {
-		throw new Error("Fetch current user response did not include user data.");
+			throw new Error("Fetch current user response did not include user data.");
 		}
 
 		return response.data;

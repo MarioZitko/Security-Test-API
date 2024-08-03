@@ -27,7 +27,7 @@ class ApiUrlTestApiClient extends BaseAPI {
 	}
 
 	public async createAPI(data: IAPI): Promise<ApiResponse<IAPI>> {
-		const response = await this.axiosInstance.post<ApiResponse<IAPI>>("", data);
+		const response = await this.axiosInstance.post<ApiResponse<IAPI>>("/", data);
 		return response.data;
 	}
 

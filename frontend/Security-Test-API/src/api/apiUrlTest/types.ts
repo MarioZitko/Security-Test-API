@@ -3,4 +3,5 @@ export interface IAPI {
 	name: string;
 	url: string;
 	description: string;
+	added_by: number;
 }

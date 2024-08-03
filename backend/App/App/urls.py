@@ -22,7 +22,7 @@ from security_tests.views import TestViewSet, APIViewSet, ResultViewSet, run_tes
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
-router.register(r'apis', APIViewSet)
+router.register(r'apis', APIViewSet, basename='api') 
 router.register(r'tests', TestViewSet, basename='test')  # This creates /api/tests/
 router.register(r'results', ResultViewSet, basename='result')  # This creates /api/results/
 
