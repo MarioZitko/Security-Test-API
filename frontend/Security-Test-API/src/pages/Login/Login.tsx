@@ -25,7 +25,7 @@ const Login: React.FC = () => {
 		e.preventDefault();
 		setLoading(true);
 		try {
-			login(username, password); // Attempt to log in
+			await login(username, password); // Attempt to log in
 			navigate("/", { replace: true });
 		} catch (error: unknown) {
 			const err = error as ApiError

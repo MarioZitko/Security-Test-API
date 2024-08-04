@@ -16,8 +16,10 @@ import {
 	Select,
 	MenuItem,
 	TableSortLabel,
+	IconButton,
 } from "@mui/material";
 import { format } from "date-fns";
+import { Delete } from "@mui/icons-material"; // Import the Delete icon
 
 const Results = () => {
 	const [results, setResults] = useState<IResult[]>([]);
@@ -30,29 +32,29 @@ const Results = () => {
 
 	const resultsApiClient = ResultsApiClient.getInstance();
 
-useEffect(() => {
-	const loadResults = async () => {
-		try {
-			const loadedResults = await resultsApiClient.getResults();
-			console.log(loadedResults.data);
+	useEffect(() => {
+		const loadResults = async () => {
+			try {
+				const loadedResults = await resultsApiClient.getResults();
+				console.log(loadedResults.data);
 
-			// Extract unique APIs for the filter dropdown
-			const uniqueApisMap = new Map<number, IAPI>();
-			loadedResults.data.forEach((result: IResult) => {
-				if (!uniqueApisMap.has(result.api.id)) {
-					uniqueApisMap.set(result.api.id, result.api);
-				}
-			});
-			setUniqueApis(Array.from(uniqueApisMap.values()));
+				// Extract unique APIs for the filter dropdown
+				const uniqueApisMap = new Map<number, IAPI>();
+				loadedResults.data.forEach((result: IResult) => {
+					if (!uniqueApisMap.has(result.api.id)) {
+						uniqueApisMap.set(result.api.id, result.api);
+					}
+				});
+				setUniqueApis(Array.from(uniqueApisMap.values()));
 
-			setResults(loadedResults.data);
-			setFilteredResults(loadedResults.data);
-		} catch (error) {
-			console.error("Error loading results:", error);
-		}
-	};
-	loadResults();
-}, []);
+				setResults(loadedResults.data);
+				setFilteredResults(loadedResults.data);
+			} catch (error) {
+				console.error("Error loading results:", error);
+			}
+		};
+		loadResults();
+	}, []);
 
 	// Filter results based on status and API
 	useEffect(() => {
@@ -96,12 +98,26 @@ useEffect(() => {
 		setFilteredResults(sortedResults);
 	};
 
+	const handleDeleteResult = async (id: number) => {
+		try {
+			await resultsApiClient.deleteResult(id);
+			// Remove the deleted result from state
+			setResults((prevResults) =>
+				prevResults.filter((result) => result.id !== id)
+			);
+			setFilteredResults((prevResults) =>
+				prevResults.filter((result) => result.id !== id)
+			);
+		} catch (error) {
+			console.error("Error deleting result:", error);
+		}
+	};
+
 	return (
 		<TableContainer component={Paper} style={{ margin: 20 }}>
 			<Typography variant="h4" style={{ margin: 20 }}>
 				Results
 			</Typography>
-
 			<FormControl style={{ marginBottom: 20, minWidth: 200, marginRight: 20 }}>
 				<InputLabel>Status</InputLabel>
 				<Select value={statusFilter} onChange={handleStatusChange}>
@@ -111,13 +127,12 @@ useEffect(() => {
 					<MenuItem value="Safe">Safe</MenuItem>
 				</Select>
 			</FormControl>
-
 			<FormControl style={{ marginBottom: 20, minWidth: 200 }}>
 				<InputLabel>API</InputLabel>
 				<Select value={apiFilter} onChange={handleApiChange}>
 					<MenuItem value="All">All</MenuItem>
-					{uniqueApis.map((api, index) => (
-						<MenuItem key={index} value={api.name}>
+					{uniqueApis.map((api) => (
+						<MenuItem key={api.id} value={api.name}>
 							{api.name}
 						</MenuItem>
 					))}
@@ -164,6 +179,7 @@ useEffect(() => {
 								Executed
 							</TableSortLabel>
 						</TableCell>
+						<TableCell>Action</TableCell> {/* New column for actions */}
 					</TableRow>
 				</TableHead>
 				<TableBody>
@@ -175,6 +191,14 @@ useEffect(() => {
 							<TableCell>{result.detail}</TableCell>
 							<TableCell>
 								{format(new Date(result.executed_at), "HH:mm:ss | yyyy-MM-dd")}
+							</TableCell>
+							<TableCell>
+								<IconButton
+									color="secondary"
+									onClick={() => handleDeleteResult(result.id)}
+								>
+									<Delete />
+								</IconButton>
 							</TableCell>
 						</TableRow>
 					))}

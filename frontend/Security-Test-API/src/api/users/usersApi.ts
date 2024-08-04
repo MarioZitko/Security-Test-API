@@ -1,7 +1,7 @@
 // UTILITY
 import BaseAPI from "../baseApi";
 import { ApiResponse } from "../types";
-import { IUser } from "../../context/types";
+import { IUser } from "./types";
 
 class UsersApiClient extends BaseAPI {
 	private static instance: UsersApiClient;
@@ -30,15 +30,13 @@ class UsersApiClient extends BaseAPI {
 	}
 
 	async fetchCurrentUser(): Promise<IUser> {
-		const response = await this.axiosInstance.get<ApiResponse<IUser>>(
-			"auth/user/"
-		);
+		const response = await this.axiosInstance.get<IUser>("auth/user/");
 
-		if (!response.data) {
+		if (!response) {
 			throw new Error("Fetch current user response did not include user data.");
 		}
 
-		return response.data;
+		return response.data; // Return the user directly
 	}
 
 	async logout(): Promise<void> {

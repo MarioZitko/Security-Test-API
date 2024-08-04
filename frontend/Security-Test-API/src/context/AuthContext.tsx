@@ -1,6 +1,7 @@
 import React, { createContext, useState, ReactNode, useEffect } from "react";
 import UsersApiClient from "../api/users/usersApi";
-import { User, AuthContextType } from "../context/types";
+import { AuthContextType } from "../api/users/types";
+import { IUser } from "../api/users/types";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
 	undefined
@@ -9,7 +10,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 	children,
 }) => {
-	const [currentUser, setCurrentUser] = useState<User | null>(null);
+	const [currentUser, setCurrentUser] = useState<IUser | null>(null);
 	const usersApiClient = UsersApiClient.getInstance();
 
 	async function login(username: string, password: string): Promise<void> {

@@ -1,5 +1,6 @@
 # views.py
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from .models import Test, API, Result
 from .serializers import TestSerializer, APISerializer, ResultSerializer
@@ -20,6 +21,7 @@ class TestViewSet(viewsets.ModelViewSet):
         return api_response(data=serializer.data)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def run_tests_for_api(request, api_id):
     api = API.objects.get(id=api_id)
     tests = Test.objects.all()
@@ -32,6 +34,7 @@ def run_tests_for_api(request, api_id):
     return api_response(data=results)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def run_single_test(request, api_id, test_id):
     try:
         api = API.objects.get(id=api_id)
@@ -48,6 +51,7 @@ def run_single_test(request, api_id, test_id):
         return api_response(data=None, message=str(e), status=500)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def view_results(request, api_id):
     results = Result.objects.filter(api_id=api_id)
     serializer = ResultSerializer(results, many=True)

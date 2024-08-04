@@ -1,11 +1,7 @@
-import axios, {
-	AxiosInstance,
-	AxiosError,
-	AxiosResponse,
-} from "axios";
+// src/api/baseApi.ts
+import axios, { AxiosInstance, AxiosError } from "axios";
 import { ApiError, ApiErrorResponse, ApiResponse } from "./types";
 
-// Update this URL based on your actual API endpoint
 const apiUrl: string = "http://localhost:8000/api/";
 
 class BaseAPI {
@@ -23,30 +19,21 @@ class BaseAPI {
 	}
 
 	private initializeInterceptors = (): void => {
-		// Correctly setting request interceptors
 		this.axiosInstance.interceptors.request.use(
 			(config) => {
-				const token = localStorage.getItem("token");
+				const token = localStorage.getItem("token"); // Retrieve token from local storage
 				if (token) {
-					config.headers["Authorization"] = `Token ${token}`;
+					config.headers["Authorization"] = `Token ${token}`; // Add token to headers
 				}
 				return config;
 			},
 			(error) => Promise.reject(error)
 		);
 
-		// Setting response interceptors to handle data and errors
 		this.axiosInstance.interceptors.response.use(
 			(response) => response,
 			(error) => this.handleError(error)
 		);
-	};
-
-	// Adjust handleResponse to return the full response
-	private handleResponse = <T>(
-		response: AxiosResponse<ApiResponse<T>>
-	): AxiosResponse<ApiResponse<T>> => {
-		return response;
 	};
 
 	protected handleError = (
@@ -54,7 +41,6 @@ class BaseAPI {
 	): Promise<ApiError> => {
 		let errorMessage = "An unexpected error occurred";
 
-		// Assert the type of error.response.data as ApiErrorResponse
 		if (error.response && error.response.data) {
 			const errorData = error.response.data as ApiErrorResponse;
 			errorMessage = errorData.message || "Server responded with an error";
@@ -65,6 +51,12 @@ class BaseAPI {
 		const apiError: ApiError = { message: errorMessage };
 		return Promise.reject(apiError);
 	};
+
+	public get<T>(url: string, config?: ApiResponse<T>): Promise<T> {
+		return this.axiosInstance
+			.get<T>(url, config)
+			.then((response) => response.data);
+	}
 }
 
 export default BaseAPI;

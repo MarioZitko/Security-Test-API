@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ApiUrlTestApiClient from "../../api/apiUrlTest/apiUrlTestApi";
 import { IAPI } from "../../api/apiUrlTest/types";
 import UsersApiClient from "../../api/users/usersApi";
-import { IUser } from "../../context/types";
+import { IUser } from "../../api/users/types";
 import {
 	Table,
 	TableBody,

@@ -28,4 +28,8 @@ export default class ResultsApiClient extends BaseApi {
 		const response = await this.axiosInstance.get<ApiResponse<IResult>>(`/${id}`);
 		return response.data;
 	}
+
+	public async deleteResult(id: number): Promise<void> {
+		await this.axiosInstance.delete(`/${id}/`);
+	}
 }
