@@ -50,8 +50,8 @@ def run_single_test(request, api_id, test_id):
 @api_view(['GET'])
 def view_results(request, api_id):
     results = Result.objects.filter(api_id=api_id)
-    data = [{"test": result.test.name, "status": result.status, "detail": result.detail} for result in results]
-    return api_response(data=data)
+    serializer = ResultSerializer(results, many=True)
+    return api_response(data=serializer.data)
 
 class APIViewSet(viewsets.ModelViewSet):
     queryset = API.objects.all()

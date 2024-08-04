@@ -12,6 +12,9 @@ class APISerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ResultSerializer(serializers.ModelSerializer):
+    test = TestSerializer()  # Nest the TestSerializer
+    api = APISerializer()    # Nest the APISerializer
+    
     class Meta:
         model = Result
         fields = '__all__'

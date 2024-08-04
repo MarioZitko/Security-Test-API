@@ -21,10 +21,15 @@ class API(models.Model):
     added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
 
+class TestStatus(models.TextChoices):
+    VULNERABLE = 'Vulnerable', 'Vulnerable'
+    ERROR = 'Error', 'Error'
+    SAFE = 'Safe', 'Safe'
+
 class Result(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     api = models.ForeignKey(API, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50, default="")
+    status = models.CharField(max_length=50, choices=TestStatus.choices, default=TestStatus.SAFE)
     detail = models.TextField(default="")
     executed_at = models.DateTimeField(auto_now_add=True)
     executed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

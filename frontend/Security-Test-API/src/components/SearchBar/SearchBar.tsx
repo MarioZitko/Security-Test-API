@@ -1,15 +1,37 @@
-import React from "react";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+// src/components/SearchBar/SearchBar.tsx
+import React, { useState } from "react";
+import { TextField, Button } from "@mui/material";
 
-const SearchBar: React.FC = () => {
+interface SearchBarProps {
+	onTestApi: (apiUrl: string) => void;
+}
+
+const SearchBar: React.FC<SearchBarProps> = ({ onTestApi }) => {
+	const [apiUrl, setApiUrl] = useState("");
+
+	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setApiUrl(event.target.value);
+	};
+
+	const handleTestApi = () => {
+		if (apiUrl.trim() !== "") {
+			onTestApi(apiUrl);
+		}
+	};
+
 	return (
-		<div className="search-bar" style={{ padding: 16 }}>
-            <TextField label="Enter your API URL" variant="outlined" fullWidth sx={{ marginBottom: 2 }} />
-            <Button variant="contained" color="primary">
-                Test API Security
-            </Button>
-        </div>
+		<div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+			<TextField
+				label="API URL"
+				variant="outlined"
+				fullWidth
+				value={apiUrl}
+				onChange={handleInputChange}
+			/>
+			<Button variant="contained" color="primary" onClick={handleTestApi}>
+				Test API Security
+			</Button>
+		</div>
 	);
 };
 
