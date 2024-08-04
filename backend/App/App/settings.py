@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
+    'dj_rest_auth.registration',
     'allauth',
     'allauth.socialaccount',
     'corsheaders',
@@ -145,3 +146,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Required for django-allauth
+SITE_ID = 1
+
+# Example configuration
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True  # Ensure this is True if you need usernames

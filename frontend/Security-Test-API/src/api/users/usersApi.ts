@@ -1,7 +1,7 @@
 // UTILITY
 import BaseAPI from "../baseApi";
 import { ApiResponse } from "../types";
-import { IUser } from "./types";
+import { IUser, IUserRegister } from "./types";
 
 class UsersApiClient extends BaseAPI {
 	private static instance: UsersApiClient;
@@ -37,6 +37,18 @@ class UsersApiClient extends BaseAPI {
 		}
 
 		return response.data; // Return the user directly
+	}
+
+	async register(data: IUserRegister): Promise<void> {
+		const response = await this.axiosInstance.post<ApiResponse<void>>(
+			"auth/registration/",
+			data
+		);
+
+		if (response.status !== 201) {
+			// assuming successful creation returns 201
+			throw new Error("Registration failed.");
+		}
 	}
 
 	async logout(): Promise<void> {

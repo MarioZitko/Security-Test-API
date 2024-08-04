@@ -138,7 +138,6 @@ const Results = () => {
 					))}
 				</Select>
 			</FormControl>
-
 			<Table>
 				<TableHead>
 					<TableRow>
@@ -179,7 +178,6 @@ const Results = () => {
 								Executed
 							</TableSortLabel>
 						</TableCell>
-						<TableCell>Action</TableCell> {/* New column for actions */}
 					</TableRow>
 				</TableHead>
 				<TableBody>

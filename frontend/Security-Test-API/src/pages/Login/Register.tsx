@@ -1,3 +1,5 @@
+// src/pages/Register.tsx
+
 import React, { useState, FormEvent } from "react";
 import {
 	Box,
@@ -6,11 +8,11 @@ import {
 	Typography,
 	Paper,
 	CircularProgress,
-	Link
+	Link,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import axios from "../../utils/axiosConfig";
 import { Link as RouterLink } from "react-router-dom";
+import UsersApiClient from "../../api/users/usersApi"; // Updated path
 import { ApiError } from "../../api/types";
 
 const Register: React.FC = () => {
@@ -19,25 +21,36 @@ const Register: React.FC = () => {
 	const [lastName, setLastName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState(""); // For password confirmation
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
+
+	// Get the instance of the Users API client
+	const usersApiClient = UsersApiClient.getInstance();
 
 	async function handleSubmit(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		setLoading(true);
 		try {
 			setError("");
-			await axios.post("auth/register/", {
+
+			if (password !== confirmPassword) {
+				throw new Error("Passwords do not match.");
+			}
+
+			await usersApiClient.register({
 				username,
-				firstName,
-				lastName,
 				email,
-				password,
+				password1: password,
+				password2: confirmPassword,
+				first_name: firstName,
+				last_name: lastName,
 			});
+
 			navigate("/login");
 		} catch (err: unknown) {
-			const error = err as ApiError
+			const error = err as ApiError;
 			const message = error.message || "Registration failed";
 			setError(message);
 			console.error("Registration error:", message);
@@ -108,6 +121,16 @@ const Register: React.FC = () => {
 						onChange={(e) => setPassword(e.target.value)}
 						required
 					/>
+					<TextField
+						label="Confirm Password"
+						type="password"
+						variant="outlined"
+						fullWidth
+						margin="normal"
+						value={confirmPassword}
+						onChange={(e) => setConfirmPassword(e.target.value)}
+						required
+					/>
 					<Button
 						type="submit"
 						color="primary"
@@ -119,7 +142,7 @@ const Register: React.FC = () => {
 						{loading ? <CircularProgress size={24} /> : "Register"}
 					</Button>
 					<Typography sx={{ mt: 2, textAlign: "center" }}>
-						Already have an account!{" "}
+						Already have an account?{" "}
 						<Link component={RouterLink} to="/login">
 							Login
 						</Link>
