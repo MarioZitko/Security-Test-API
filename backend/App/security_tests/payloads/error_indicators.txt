@@ -1,0 +1,7 @@
+syntax error
+sql error
+unclosed quotation mark
+ORA-00933
+ORA-01756
+ODBC SQL
+Unexpected end of SQL command

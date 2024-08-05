@@ -1,18 +1,100 @@
 # security_tests/security_checks.py
 import requests
 import json
+import time
+import os
+
+# Function to read payloads and error indicators from external files
+def load_payloads(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return [line.strip() for line in file.readlines() if line.strip()]
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return []
 
 def test_sql_injection(api_url):
-    payloads = ["admin' --", "' OR '1'='1", "' OR '1'='1' --", "' OR '1'='1' /*"]
-    error_indicators = ["syntax error", "sql error", "unclosed quotation mark"]
-    for payload in payloads:
-        try:
-            response = requests.post(api_url, data={'user_input': payload})
-            if any(indicator in response.text.lower() for indicator in error_indicators):
-                return "Vulnerable", f"SQL Injection possible with payload: {payload}"
-        except requests.exceptions.RequestException as e:
-            return "Error", f"Failed to test due to network or connection error: {str(e)}"
+    # Load payloads and error indicators from external files
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    PAYLOADS_DIR = os.path.join(BASE_DIR, 'payloads')
+
+    classic_payloads = load_payloads(os.path.join(PAYLOADS_DIR, 'classic_payloads.txt'))
+    time_based_payloads = load_payloads(os.path.join(PAYLOADS_DIR, 'time_based_payloads.txt'))
+    union_based_payloads = load_payloads(os.path.join(PAYLOADS_DIR, 'union_based_payloads.txt'))
+    boolean_payloads = load_payloads(os.path.join(PAYLOADS_DIR, 'boolean_payloads.txt'))
+    waf_bypass_payloads = load_payloads(os.path.join(PAYLOADS_DIR, 'waf_bypass_payloads.txt'))
+    comment_payloads = load_payloads(os.path.join(PAYLOADS_DIR, 'comment_payloads.txt'))
+    error_indicators = load_payloads(os.path.join(PAYLOADS_DIR, 'error_indicators.txt'))
+
+    # Combine all payloads into one list
+    all_payloads = (
+        classic_payloads +
+        time_based_payloads +
+        union_based_payloads +
+        boolean_payloads +
+        waf_bypass_payloads +
+        comment_payloads
+    )
+
+    # List of parameters to test
+    parameters = ['username', 'password', 'email', 'search']
+
+    # Iterate through each parameter and payload
+    for param in parameters:
+        for payload in all_payloads:
+            # Use GET request for testing simple queries (comment if not applicable)
+            test_get(api_url, param, payload, error_indicators)
+
+            # Use POST request for testing form submissions
+            test_post(api_url, param, payload, error_indicators)
+
     return "Safe", "No vulnerabilities detected."
+
+def test_get(api_url, param, payload, error_indicators):
+    try:
+        response = requests.get(api_url, params={param: payload}, timeout=10)
+        if analyze_response(response, error_indicators, param, payload):
+            return
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Failed to test {param} due to network or connection error: {str(e)}")
+
+def test_post(api_url, param, payload, error_indicators):
+    data = {param: payload}
+    try:
+        response = requests.post(api_url, data=data, timeout=10)
+        if analyze_response(response, error_indicators, param, payload):
+            return
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Failed to test {param} due to network or connection error: {str(e)}")
+
+def analyze_response(response, error_indicators, param, payload):
+    # Check for SQL error indicators in response
+    if any(indicator in response.text.lower() for indicator in error_indicators):
+        print(f"Vulnerable: SQL Injection possible with payload on '{param}': {payload}")
+        return True
+
+    # Check for typical SQL injection behavior in the response
+    if response.status_code == 200 and "Welcome" in response.text:
+        print(f"Authentication bypass achieved with payload on '{param}': {payload}")
+        return True
+
+    # Additional checks for union-based payloads
+    if "union select" in payload.lower() and "test" in response.text:
+        print(f"Union-based SQL Injection detected with payload on '{param}': {payload}")
+        return True
+
+    # Additional checks for time-based payloads
+    if "sleep" in payload.lower() or "waitfor" in payload.lower():
+        # If the response time exceeds a threshold, it's a sign of time-based SQL injection
+        start_time = time.time()
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 10:
+            print(f"Time-based SQL Injection detected with payload on '{param}': {payload}")
+            return True
+
+    return False
 
 def test_xss(api_url):
     """

