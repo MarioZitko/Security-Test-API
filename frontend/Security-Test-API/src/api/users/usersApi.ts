@@ -45,7 +45,7 @@ class UsersApiClient extends BaseAPI {
 			data
 		);
 
-		if (response.status !== 201) {
+		if (response.status !== 204) {
 			// assuming successful creation returns 201
 			throw new Error("Registration failed.");
 		}
