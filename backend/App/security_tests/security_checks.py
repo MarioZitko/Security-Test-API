@@ -5,17 +5,11 @@ import time
 import os
 from urllib.parse import quote
 
-def check_api_accessibility(api_url):
-    try:
-        response = requests.get(api_url, timeout=5)
-        response.raise_for_status()
-        return True
-    except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
-        print(f"API is not accessible. Failed due to: {str(e)}")
-        return False
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FILE_DIR = os.path.join(BASE_DIR, 'txt_data')
 
-#region Sql Injection
-# Function to read payloads and error indicators from external files
+#region Helper Methods
+
 def load_data(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -24,123 +18,148 @@ def load_data(file_path):
         print(f"File not found: {file_path}")
         return []
 
-def test_sql_injection(api_url):
-    if not check_api_accessibility(api_url):
-        return "API Unreachable", "Test aborted due to API inaccessibility."
+def check_api_accessibility(api_url):
+    try:
+        response = requests.get(api_url, timeout=5)
+        response.raise_for_status()
+        return True
+    except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
+        print(f"API is not accessible. Failed due to: {str(e)}")
+        return False
     
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    PAYLOADS_DIR = os.path.join(BASE_DIR, 'txt_data')
-
-    # Load different types of payloads
-    payload_types = ['classic', 'time_based', 'union_based', 'boolean', 'waf_bypass', 'comment']
-    payloads = {ptype: load_data(os.path.join(PAYLOADS_DIR, f"{ptype}_payloads.txt")) for ptype in payload_types}
-    error_indicators = load_data(os.path.join(PAYLOADS_DIR, 'error_indicators.txt'))
-
-    # Combine all payloads into one list
-    all_payloads = sum(payloads.values(), [])
-
-    parameters = ['username', 'password', 'email', 'search']
-    vulnerabilities = []
-
-    # Testing each parameter with all payloads
-    for param in parameters:
-        for payload in all_payloads:
-            if test_get(api_url, param, payload, error_indicators):
-                vulnerabilities.append((param, payload, 'GET'))
-            if test_post(api_url, param, payload, error_indicators):
-                vulnerabilities.append((param, payload, 'POST'))
-
-    if vulnerabilities:
-        return "Vulnerable", vulnerabilities
-    return "Safe", "No vulnerabilities detected."
-
-def test_get(api_url, param, payload, error_indicators):
+def test_get(api_url, payload, param=''):
     try:
         response = requests.get(f"{api_url}?{param}={quote(payload)}", timeout=10)
-        return analyze_response(response, error_indicators)
+        return analyze_response(response)
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to test {param} with GET due to: {str(e)}")
         return False
 
-def test_post(api_url, param, payload, error_indicators):
+def test_post(api_url, payload, param=''):
     data = {param: payload}
     try:
         response = requests.post(api_url, data=data, timeout=10)
-        return analyze_response(response, error_indicators)
+        return analyze_response(response)
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to test {param} with POST due to: {str(e)}")
         return False
+    
+def check_for_sensitive_data(response_text):
+    sensitive_keywords = load_data(os.path.join(FILE_DIR, 'sensitive_data_indicators.txt'))
+    # Check if any of the sensitive data indicators are present in the response
+    for keyword in sensitive_keywords:
+        if keyword in response_text.lower():
+            print(f"Sensitive data detected: {keyword}")
+            return True
+    return False
 
-def analyze_response(response, error_indicators):
+def analyze_response(response):
+    error_indicators = load_data(os.path.join(FILE_DIR, 'error_indicators.txt'))
     text = response.text.lower()
+    # Check for SQL error indicators in response text
     if any(indicator in text for indicator in error_indicators):
         print(f"Vulnerable: Detected SQL error indicator with payload.")
         return True
 
-    # Additional checks for time-based or behavior anomalies
-    if "welcome" in text or response.status_code != 200:
-        print(f"Vulnerable: Anomalous response behavior detected.")
+   # Analyze based on specific indicators of a successful injection
+    if response.status_code == 200:
+        # Check for specific data that shouldn't normally be accessible
+        if check_for_sensitive_data(text):
+            print(f"Vulnerable: Possible data leakage detected with payload.")
+            return True
+    elif response.status_code == 500:
+        # A server error might indicate that the SQL injection has some disruptive effect
+        print(f"Vulnerable: Server error potentially caused by SQL injection.")
+        return True
+    
+    # Additional generic checks can be added here
+    if "unauthorized" in text or "forbidden" in text:
+        print("Potential security misconfiguration or inadequate permissions.")
         return True
 
     return False
 
 #endregion
 
+def test_sql_injection(api_url):
+    if not check_api_accessibility(api_url):
+        return "API Unreachable", "Test aborted due to API inaccessibility."
+    
+    # Load different types of payloads
+    payload_types = ['classic', 'time_based', 'union_based', 'boolean', 'waf_bypass', 'comment']
+    payloads = {ptype: load_data(os.path.join(FILE_DIR, f"{ptype}_payloads.txt")) for ptype in payload_types}
+
+    # Combine all payloads into one list
+    all_payloads = sum(payloads.values(), [])
+
+    parameters = load_data(os.path.join(FILE_DIR, 'parameters.txt'))
+    vulnerabilities = []
+
+    # Testing each parameter with all payloads
+    for param in parameters:
+        for payload in all_payloads:
+            if test_get(api_url, payload, param):
+                vulnerabilities.append((param, payload, 'GET'))
+            if test_post(api_url, payload, param):
+                vulnerabilities.append((param, payload, 'POST'))
+
+    if vulnerabilities:
+        return "Vulnerable", vulnerabilities
+    return "Safe", "No vulnerabilities detected."
+
+
 def test_xss(api_url):
-    """
-    Test for Cross-Site Scripting (XSS) vulnerabilities.
-    
-    Args:
-        api_url (str): The URL of the API endpoint to test.
-        
-    Returns:
-        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
-    """
     # Common XSS payloads
-    payloads = [
-        "<script>alert('XSS')</script>",
-        "\";alert('XSS');//",
-        "\"><script>alert('XSS')</script>",
-        "<img src=x onerror=alert('XSS')>",
-        "<svg/onload=alert('XSS')>",
-    ]
-
-    # Iterate over each payload to test for XSS
-    for payload in payloads:
-        try:
-            # Simulate a POST request with payload as a user input
-            response = requests.post(api_url, data={'user_input': payload})
-
-            # Check if the payload appears in the response text
-            if payload in response.text:
-                return "Vulnerable", f"XSS possible with payload: {payload}"
-        except requests.exceptions.RequestException as e:
-            return "Error", f"Failed to test due to network or connection error: {str(e)}"
+    payloads = load_data(os.path.join(FILE_DIR, 'xss_payloads.txt'))
+    vulnerabilities = []
+    parameters = load_data(os.path.join(FILE_DIR, 'parameters.txt'))
     
+    for param in parameters:
+        for payload in payloads:
+            # Encode the payload for URL usage
+            encoded_payload = quote(payload)
+
+            # Test GET method
+            if test_get(api_url, encoded_payload, param):
+                vulnerabilities.append((param, payload, 'GET'))
+
+            # Test POST method
+            if test_post(api_url, encoded_payload, param):
+                vulnerabilities.append((param, payload, 'POST'))
+
+    if vulnerabilities:
+        return "Vulnerable", vulnerabilities
     return "Safe", "No XSS vulnerabilities detected."
 
 def test_csrf(api_url):
     """
-    Test for Cross-Site Request Forgery (CSRF) vulnerabilities.
-    
+    Enhanced test for Cross-Site Request Forgery (CSRF) vulnerabilities.
+
     Args:
         api_url (str): The URL of the API endpoint to test.
         
     Returns:
-        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
+        tuple: A tuple containing the status ('Vulnerable', 'Safe', or 'Error') and a detailed message.
     """
-    try:
-        # Attempt to make a POST request without CSRF token
-        response = requests.post(api_url, data={'action': 'test_csrf'}, cookies={'sessionid': 'fake-session-id'})
-        
-        # Check for signs of CSRF protection (e.g., 403 status, specific error message)
-        if response.status_code == 403 or "CSRF token" in response.text:
-            return "Safe", "CSRF protection is enabled."
-        
-        return "Vulnerable", "CSRF protection is not enabled. The request succeeded without a CSRF token."
-    
-    except requests.exceptions.RequestException as e:
-        return "Error", f"Failed to test due to network or connection error: {str(e)}"
+    headers = {'Content-Type': 'application/json'}
+    data = '{"action": "test_csrf"}'
+    cookies = {'sessionid': 'fake-session-id'}
+    methods = ['POST', 'PUT', 'DELETE', 'PATCH']  # Testing multiple methods for CSRF
+
+    for method in methods:
+        try:
+            response = requests.request(method, api_url, headers=headers, data=data, cookies=cookies, timeout=10)
+            
+            # Generalized check for CSRF or other authorization failures
+            if response.status_code in [403, 401]:
+                if "csrf" in response.text.lower():
+                    return "Safe", f"CSRF protection detected with {method} method."
+                continue  # Check next method if generic 403/401 without mention of CSRF
+
+        except requests.exceptions.RequestException as e:
+            return "Error", f"Failed to test {method} due to network or connection error: {str(e)}"
+
+    return "Vulnerable", "CSRF protection is not adequately enabled across methods."
     
 def test_command_injection(api_url):
     """

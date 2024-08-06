@@ -20,6 +20,7 @@ import {
 	InputLabel,
 	Snackbar,
 	Alert,
+	CircularProgress
 } from "@mui/material";
 
 const Tests = () => {
@@ -30,6 +31,7 @@ const Tests = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [testResults, setTestResults] = useState<ITestResult[]>([]);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
+	const [loadingTests, setLoadingTests] = useState<{ [key: number]: boolean }>({});
 
 	const testsApiClient = TestsApiClient.getInstance();
 	const apiUrlTestApiClient = ApiUrlTestApiClient.getInstance();
@@ -70,27 +72,31 @@ const Tests = () => {
 
 	const handleRunSingleTest = async (testId: number) => {
 		if (selectedApi !== null) {
+			setLoadingTests((prev) => ({ ...prev, [testId]: true })); // Set loading to true for the specific test
 			try {
 				const result = await testsApiClient.runSingleTest(selectedApi, testId);
 				setTestResults((prevResults) => {
 					const updatedResults = [...prevResults];
 					const resultIndex = updatedResults.findIndex(
-						(res) => res.testId === testId // Ensure this matches your IResult type structure
+						(res) => res.testId === testId
 					);
 					if (resultIndex > -1) {
-						updatedResults[resultIndex] = result.data; // Update existing result
+						updatedResults[resultIndex] = result.data;
 					} else {
-						updatedResults.push(result.data); // Add new result
+						updatedResults.push(result.data);
 					}
 					return updatedResults;
 				});
-				setSnackbarOpen(true); // Open snackbar on success
+				setSnackbarOpen(true);
 			} catch (err) {
 				handleError(err);
-				setSnackbarOpen(true); // Open snackbar on error
+				setSnackbarOpen(true);
+			} finally {
+				setLoadingTests((prev) => ({ ...prev, [testId]: false })); // Set loading to false once done
 			}
 		}
 	};
+
 
 	// Handle unknown error type
 	const handleError = (err: unknown) => {
@@ -179,9 +185,13 @@ const Tests = () => {
 										variant="outlined"
 										color="secondary"
 										onClick={() => handleRunSingleTest(test.id)}
-										disabled={selectedApi === null}
+										disabled={selectedApi === null || loadingTests[test.id]}
 									>
-										Run Test
+										{loadingTests[test.id] ? (
+											<CircularProgress size={24} />
+										) : (
+											"Run Test"
+										)}
 									</Button>
 								</TableCell>
 							</TableRow>

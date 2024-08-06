@@ -27,14 +27,12 @@ export default class TestsApiClient extends BaseApi {
 	}
 
 	public async runTestsForApi(apiId: number): Promise<ApiResponse<ITestResult[]>> {
-		// Make a POST request to the run_tests_for_api endpoint
 		const response = await this.axiosInstance.post<ITestResultsResponse>(`/run-tests/${apiId}/`);
 		return response.data;
 	}
 
-	public async runSingleTest(apiId: number, testId: number): Promise<ApiResponse<ISingleTestResult>> {
-        // Correct endpoint path for running a single test
+	public async runSingleTest(apiId: number,testId: number): Promise<ApiResponse<ITestResult>> {
 		const response = await this.axiosInstance.post<ISingleTestResult>(`/run-test/${apiId}/${testId}/`);
-        return response.data;
-    }
+		return response.data;
+	}
 }

