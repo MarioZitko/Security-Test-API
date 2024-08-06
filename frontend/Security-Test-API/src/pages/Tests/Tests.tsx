@@ -57,19 +57,6 @@ const Tests = () => {
 		setTestResults([]); // Reset test results when a new API is selected
 	};
 
-	const handleRunTests = async () => {
-		if (selectedApi !== null) {
-			try {
-				const resultData = await testsApiClient.runTestsForApi(selectedApi);
-				setTestResults(resultData.data);
-				setSnackbarOpen(true); // Open snackbar on success
-			} catch (err) {
-				handleError(err);
-				setSnackbarOpen(true); // Open snackbar on error
-			}
-		}
-	};
-
 	const handleRunSingleTest = async (testId: number) => {
 		if (selectedApi !== null) {
 			setLoadingTests((prev) => ({ ...prev, [testId]: true })); // Set loading to true for the specific test
@@ -152,15 +139,6 @@ const Tests = () => {
 					))}
 				</Select>
 			</FormControl>
-			<Button
-				variant="contained"
-				color="primary"
-				onClick={handleRunTests}
-				disabled={selectedApi === null}
-				style={{ marginBottom: 20 }}
-			>
-				Run All Tests
-			</Button>
 			<Table>
 				<TableHead>
 					<TableRow>

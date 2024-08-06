@@ -5,6 +5,7 @@ import time
 import os
 from urllib.parse import quote
 
+# Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FILE_DIR = os.path.join(BASE_DIR, 'txt_data')
 
@@ -27,19 +28,20 @@ def check_api_accessibility(api_url):
         print(f"API is not accessible. Failed due to: {str(e)}")
         return False
     
-def test_get(api_url, payload, param=''):
+def test_get(api_url, payload, error_indicators, param=''):
     try:
         response = requests.get(f"{api_url}?{param}={quote(payload)}", timeout=10)
-        return analyze_response(response)
+        return analyze_response(response, error_indicators)
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to test {param} with GET due to: {str(e)}")
         return False
 
-def test_post(api_url, payload, param=''):
+def test_post(api_url, payload, error_indicators, param=''):
     data = {param: payload}
+    headers = {'Content-Type': 'application/json'} # Json data payload type
     try:
-        response = requests.post(api_url, data=data, timeout=10)
-        return analyze_response(response)
+        response = requests.post(api_url, data=data, headers=headers, timeout=10)
+        return analyze_response(response, error_indicators)
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to test {param} with POST due to: {str(e)}")
         return False
@@ -53,12 +55,11 @@ def check_for_sensitive_data(response_text):
             return True
     return False
 
-def analyze_response(response):
-    error_indicators = load_data(os.path.join(FILE_DIR, 'error_indicators.txt'))
+def analyze_response(response, error_indicators):
     text = response.text.lower()
-    # Check for SQL error indicators in response text
+    # Check for error indicators in response text
     if any(indicator in text for indicator in error_indicators):
-        print(f"Vulnerable: Detected SQL error indicator with payload.")
+        print(f"Vulnerable: Detected error indicator with payload.")
         return True
 
    # Analyze based on specific indicators of a successful injection
@@ -68,8 +69,8 @@ def analyze_response(response):
             print(f"Vulnerable: Possible data leakage detected with payload.")
             return True
     elif response.status_code == 500:
-        # A server error might indicate that the SQL injection has some disruptive effect
-        print(f"Vulnerable: Server error potentially caused by SQL injection.")
+        # A server error might indicate that the payload has some disruptive effect
+        print(f"Vulnerable: Server error potentially caused.")
         return True
     
     # Additional generic checks can be added here
@@ -88,7 +89,7 @@ def test_sql_injection(api_url):
     # Load different types of payloads
     payload_types = ['classic', 'time_based', 'union_based', 'boolean', 'waf_bypass', 'comment']
     payloads = {ptype: load_data(os.path.join(FILE_DIR, f"{ptype}_payloads.txt")) for ptype in payload_types}
-
+    error_indicators = load_data(os.path.join(FILE_DIR, 'error_indicators.txt'))
     # Combine all payloads into one list
     all_payloads = sum(payloads.values(), [])
 
@@ -98,10 +99,10 @@ def test_sql_injection(api_url):
     # Testing each parameter with all payloads
     for param in parameters:
         for payload in all_payloads:
-            if test_get(api_url, payload, param):
-                vulnerabilities.append((param, payload, 'GET'))
-            if test_post(api_url, payload, param):
-                vulnerabilities.append((param, payload, 'POST'))
+            if test_get(api_url, payload, error_indicators, param):
+                vulnerabilities.append((param, payload, error_indicators, 'GET'))
+            if test_post(api_url, payload, error_indicators, param):
+                vulnerabilities.append((param, payload, error_indicators, 'POST'))
 
     if vulnerabilities:
         return "Vulnerable", vulnerabilities
@@ -113,6 +114,7 @@ def test_xss(api_url):
     payloads = load_data(os.path.join(FILE_DIR, 'xss_payloads.txt'))
     vulnerabilities = []
     parameters = load_data(os.path.join(FILE_DIR, 'parameters.txt'))
+    error_indicators = load_data(os.path.join(FILE_DIR, 'error_indicators.txt'))
     
     for param in parameters:
         for payload in payloads:
@@ -120,12 +122,12 @@ def test_xss(api_url):
             encoded_payload = quote(payload)
 
             # Test GET method
-            if test_get(api_url, encoded_payload, param):
-                vulnerabilities.append((param, payload, 'GET'))
+            if test_get(api_url, encoded_payload, error_indicators, param):
+                vulnerabilities.append((param, payload, error_indicators, 'GET'))
 
             # Test POST method
-            if test_post(api_url, encoded_payload, param):
-                vulnerabilities.append((param, payload, 'POST'))
+            if test_post(api_url, encoded_payload, error_indicators, param):
+                vulnerabilities.append((param, payload, error_indicators, 'POST'))
 
     if vulnerabilities:
         return "Vulnerable", vulnerabilities
@@ -181,25 +183,47 @@ def test_command_injection(api_url):
     ]
 
     # Expected error messages for failed command execution
-    error_indicators = ["No such file or directory", "is not recognized as an internal or external command", "command not found"]
+    error_indicators = load_data(os.path.join(FILE_DIR, 'command_error_indicators.txt'))
 
     for payload in payloads:
         try:
-            # Send the payload as part of a query parameter
-            response = requests.get(api_url, params={'input': payload})
+            encoded_payload = quote(payload)
             
-            # Analyze response text for typical command output or error indicators
-            if any(indicator in response.text for indicator in error_indicators):
-                continue  # This indicates a failed execution, which is expected
+            # Test GET method
+            if test_get(api_url, "cmd", encoded_payload, error_indicators):
+                return "Vulnerable", f"Command injection might be possible with payload: {payload} using GET"
 
-            if "root" in response.text or "Administrator" in response.text:
-                return "Vulnerable", f"Command injection possible with payload: {payload}"
+            # Test POST method
+            if test_post(api_url, "cmd", encoded_payload, error_indicators):
+                return "Vulnerable", f"Command injection might be possible with payload: {payload} using POST"
 
         except requests.exceptions.RequestException as e:
             return "Error", f"Failed to test due to network or connection error: {str(e)}"
     
     return "Safe", "No command injection vulnerabilities detected."
     
+def load_credentials(file_path):
+    """
+    Load credentials from a file, expecting each line to contain a username and password separated by a colon.
+
+    Args:
+        file_path (str): Path to the file containing credentials formatted as 'username:password'.
+
+    Returns:
+        list of tuples: List of (username, password) tuples.
+    """
+    raw_data = load_data(file_path)
+    credentials = []
+
+    # Process each line to extract username and password
+    for line in raw_data:
+        parts = line.split(':')
+        if len(parts) == 2:
+            credentials.append((parts[0], parts[1]))
+        else:
+            print(f"Skipping malformed line: {line}")
+    return credentials
+
 def test_broken_authentication(api_url):
     """
     Test for Broken Authentication vulnerabilities.
@@ -211,28 +235,23 @@ def test_broken_authentication(api_url):
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
     # Common weak credentials to test
-    common_credentials = [
-        ("admin", "admin"),
-        ("admin", "password"),
-        ("user", "123456"),
-        ("guest", "guest"),
-        ("root", "toor"),
-    ]
+    common_credentials = load_credentials(os.path.join(FILE_DIR, 'common_credentials.txt'))
 
     # Endpoint assumed for authentication
-    auth_endpoint = f"{api_url}/login"
-
-    for username, password in common_credentials:
-        try:
-            # Attempt to authenticate with weak credentials
-            response = requests.post(auth_endpoint, data={"username": username, "password": password})
-            
-            # Check if login is successful (usually indicated by a 200 status code or specific message)
-            if response.status_code == 200 and "login successful" in response.text.lower():
-                return "Vulnerable", f"Broken authentication detected with username: {username}, password: {password}"
-        
-        except requests.exceptions.RequestException as e:
-            return "Error", f"Failed to test due to network or connection error: {str(e)}"
+    auth_endpoints = load_data(os.path.join(FILE_DIR, 'auth_endpoints.txt'))
+    
+    for endpoint in auth_endpoints:
+        for username, password in common_credentials:
+            try:
+                full_endpoint = f"{api_url}/{endpoint}"
+                response = requests.post(full_endpoint, json={"username": username, "password": password})
+                if response.ok and "login successful" in response.text.lower():
+                    return "Vulnerable", f"Broken authentication detected with username: {username}, password: {password}, on endpoint {full_endpoint}"
+                elif response.status_code in [401, 403]:  # Unauthorized or Forbidden
+                    continue  # Expected unsuccessful response, check next credentials
+            except requests.exceptions.RequestException as e:
+                print(f"Network or connection error: {str(e)}")  # Log the error for debugging
+                continue  # Continue testing other credentials despite the error
 
     return "Safe", "No broken authentication vulnerabilities detected."
 
