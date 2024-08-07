@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
 		};
 
 		checkUserLoggedIn(); // Call the async function inside useEffect
-	}, []);
+	});
 
 	const handleTestApi = (url: string) => {
 		setApiUrl(url);

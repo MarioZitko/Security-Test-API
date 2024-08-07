@@ -55,7 +55,7 @@ const Results = () => {
 			}
 		};
 		loadResults();
-	}, []);
+	});
 
 	// Filter results based on status and API
 	useEffect(() => {
