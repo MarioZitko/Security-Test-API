@@ -79,14 +79,5 @@
 			"description": "Tests for commonly misconfigured security settings that might make the API vulnerable.",
 			"test_function": "test_security_misconfiguration"
 		}
-	},
-	{
-		"model": "security_tests.test",
-		"pk": 10,
-		"fields": {
-			"name": "Components with Known Vulnerabilities",
-			"description": "Scans for components or libraries that are outdated or have known vulnerabilities.",
-			"test_function": "test_components_with_vulnerabilities"
-		}
 	}
 ]
