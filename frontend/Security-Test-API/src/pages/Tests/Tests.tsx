@@ -22,6 +22,7 @@ import {
 	Alert,
 	CircularProgress
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material";
 
 const Tests = () => {
 	const [tests, setTests] = useState<ITest[]>([]);
@@ -50,9 +51,10 @@ const Tests = () => {
 			}
 		};
 		loadData();
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	const handleApiChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+	const handleApiChange = (event: SelectChangeEvent<number>) => {
 		setSelectedApi(event.target.value as number);
 		setTestResults([]); // Reset test results when a new API is selected
 	};

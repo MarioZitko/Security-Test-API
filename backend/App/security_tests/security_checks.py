@@ -4,12 +4,30 @@ import json
 import time
 import os
 from urllib.parse import quote
+from functools import wraps
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FILE_DIR = os.path.join(BASE_DIR, 'txt_data')
 
 #region Helper Methods
+
+def retry_on_timeout(attempts=3, delay=2):
+    """Decorator to retry a function if a timeout occurs."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            nonlocal attempts
+            while attempts > 0:
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.Timeout:
+                    print(f"Timeout encountered in {func.__name__}. Retrying...")
+                    time.sleep(delay)
+                    attempts -= 1
+            return False  # Return False after all attempts fail
+        return wrapper
+    return decorator
 
 def load_data(file_path):
     try:
@@ -28,6 +46,7 @@ def check_api_accessibility(api_url):
         print(f"API is not accessible. Failed due to: {str(e)}")
         return False
     
+@retry_on_timeout(attempts=3, delay=2)
 def test_get(api_url, payload, error_indicators, param=''):
     try:
         response = requests.get(f"{api_url}/{param}/{quote(payload)}", timeout=10)
@@ -36,6 +55,7 @@ def test_get(api_url, payload, error_indicators, param=''):
         print(f"Error: Failed to test {param} with GET due to: {str(e)}")
         return False
     
+@retry_on_timeout(attempts=3, delay=2)
 def test_sql_get(api_url, payload, error_indicators, param=''):
     try:
         response = requests.get(f"{api_url}?{param}={quote(payload)}", timeout=10)
@@ -44,6 +64,7 @@ def test_sql_get(api_url, payload, error_indicators, param=''):
         print(f"Error: Failed to test {param} with GET due to: {str(e)}")
         return False
 
+@retry_on_timeout(attempts=3, delay=2)
 def test_post(api_url, payload, error_indicators, param=''):
     data = {param: payload}
     headers = {'Content-Type': 'application/json'} # Json data payload type

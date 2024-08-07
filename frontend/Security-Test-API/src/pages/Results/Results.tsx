@@ -55,7 +55,8 @@ const Results = () => {
 			}
 		};
 		loadResults();
-	});
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	// Filter results based on status and API
 	useEffect(() => {
