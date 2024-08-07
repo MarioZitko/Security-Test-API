@@ -341,19 +341,33 @@ def test_insecure_deserialization(api_url):
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
     # Malicious payload for deserialization attack
-    payload = """O:8:"Exploit":1:{s:4:"test";s:24:"insecure deserialization";}"""
+    payloads = load_data(os.path.join(FILE_DIR, 'deserialization_payloads.txt'))
+    headers = {'Content-Type': 'application/octet-stream'}
+    
+    attack_indicators = [
+        "root:x",           # Common pattern in /etc/passwd
+        "bin:x",            # Another common pattern in /etc/passwd
+        "daemon:x",         # Typical user entry in /etc/passwd
+        "command not found",  # Response when an unknown command is executed
+        "syntax error",     # Possible output if the serialization breaks PHP/Java syntax
+        "total",            # Common output from 'ls -la', indicating command execution
+        "drwx",             # Directory listing from 'ls -la'
+        "insecure deserialization",  # Direct indication of vulnerability exploitation
+        "exploit executed",  # Custom message that might be used in crafted payloads
+        "remote code executed",  # Indication of remote code execution
+        "command executed"  # Generic indication that any command was executed
+    ]
 
-    try:
-        # Send the payload as a POST request to the API
-        headers = {'Content-Type': 'application/octet-stream'}
-        response = requests.post(api_url, data=payload, headers=headers)
+    for payload in payloads:
+        try:
+            response = requests.post(api_url, data=payload, headers=headers)
+            # Check for typical signs of successful deserialization attacks
+            for indicator in attack_indicators:
+                if indicator in response.text.lower():
+                    return "Vulnerable", f"Insecure deserialization detected with payload: {payload}, attack indicator {indicator}"
 
-        # Check for typical signs of successful deserialization attacks
-        if "insecure deserialization" in response.text:
-            return "Vulnerable", "Insecure deserialization detected. Malicious payload was processed."
-
-    except requests.exceptions.RequestException as e:
-        return "Error", f"Failed to test due to network or connection error: {str(e)}"
+        except requests.exceptions.RequestException as e:
+            return "Error", f"Failed to test due to network or connection error: {str(e)}"
 
     return "Safe", "No insecure deserialization vulnerabilities detected."
 

