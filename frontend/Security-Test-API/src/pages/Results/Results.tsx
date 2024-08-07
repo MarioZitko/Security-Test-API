@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import { Delete } from "@mui/icons-material"; // Import the Delete icon
+import { SelectChangeEvent } from "@mui/material/Select";
 
 const Results = () => {
 	const [results, setResults] = useState<IResult[]>([]);
@@ -75,11 +76,11 @@ const Results = () => {
 		setFilteredResults(updatedResults);
 	}, [results, statusFilter, apiFilter]);
 
-	const handleStatusChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+	const handleStatusChange = (event: SelectChangeEvent<string>) => {
 		setStatusFilter(event.target.value as string);
 	};
 
-	const handleApiChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+	const handleApiChange = (event: SelectChangeEvent<string>) => {
 		setApiFilter(event.target.value as string);
 	};
 
