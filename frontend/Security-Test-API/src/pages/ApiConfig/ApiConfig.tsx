@@ -57,7 +57,7 @@ const Apis = () => {
         
         loadCurrentUser();
 		loadAPIs();
-	});
+	}, []);
 
     const handleOpenDialog = (api?: IAPI) => {
         if (currentUser) {

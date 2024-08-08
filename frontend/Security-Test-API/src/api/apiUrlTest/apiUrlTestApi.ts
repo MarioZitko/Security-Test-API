@@ -32,7 +32,7 @@ class ApiUrlTestApiClient extends BaseAPI {
 	}
 
 	public async updateAPI(id: number, data: IAPI): Promise<ApiResponse<IAPI>> {
-		const response = await this.axiosInstance.put<ApiResponse<IAPI>>(`/${id}`,data);
+		const response = await this.axiosInstance.put<ApiResponse<IAPI>>(`/${id}/`, data);
 		return response.data;
 	}
 
