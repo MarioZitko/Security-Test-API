@@ -138,58 +138,108 @@ def test_sql_injection(api_url):
     return "Safe", "No vulnerabilities detected."
 
 def test_xss(api_url):
-    # Common XSS payloads
+    """
+    Test for both Reflected and Stored XSS vulnerabilities by checking if the payload is reflected in any form.
+    Args:
+        api_url (str): The URL of the API endpoint to test.
+    Returns:
+        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detailed message.
+    """
+    # Load XSS payloads from a file
     payloads = load_data(os.path.join(FILE_DIR, 'xss_payloads.txt'))
     vulnerabilities = []
     parameters = load_data(os.path.join(FILE_DIR, 'parameters.txt'))
     error_indicators = load_data(os.path.join(FILE_DIR, 'error_indicators.txt'))
-    
+
     for param in parameters:
         for payload in payloads:
             # Encode the payload for URL usage
             encoded_payload = quote(payload)
 
-            # Test GET method
-            if test_get(api_url, encoded_payload, error_indicators, param):
+            # Test GET method for reflected XSS
+            if test_reflected_xss(api_url, encoded_payload, error_indicators, param):
                 vulnerabilities.append((param, payload, error_indicators, 'GET'))
 
-            # Test POST method
-            if test_post(api_url, encoded_payload, error_indicators, param):
+            # Test POST method for stored XSS
+            if test_stored_xss(api_url, encoded_payload, error_indicators, param):
                 vulnerabilities.append((param, payload, error_indicators, 'POST'))
 
     if vulnerabilities:
         return "Vulnerable", vulnerabilities
     return "Safe", "No XSS vulnerabilities detected."
 
+def test_reflected_xss(api_url, payload, error_indicators, param):
+    """
+    Check if the payload is reflected in the HTML response, indicating potential for DOM-based XSS.
+    """
+    try:
+        response = requests.get(f"{api_url}/{param}?q={payload}", timeout=10)
+        if payload in response.text:
+            print(f"Payload reflection detected for parameter: {param}")
+            return analyze_response(response, error_indicators)
+    except requests.exceptions.RequestException as e:
+        print(f"Error in reflected XSS check: {str(e)}")
+        return False
+    return False
+
+def test_stored_xss(api_url, payload, error_indicators, param):
+    """
+    Test if the payload can be stored and then executed on retrieval, indicating stored XSS vulnerability.
+    """
+    try:
+        # Assuming the API supports a POST that stores data
+        post_response = requests.post(f"{api_url}/{param}", data={param: payload}, headers={'Content-Type': 'application/json'}, timeout=10)
+        get_response = requests.get(api_url, timeout=10)
+        if payload in get_response.text:
+            print(f"Stored XSS payload found in GET response for parameter: {param}")
+            return analyze_response(get_response, error_indicators)
+        if payload in post_response.text:
+            print(f"Stored XSS payload found in POST response for parameter: {param}")
+            return analyze_response(post_response, error_indicators)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Error in stored XSS check: {str(e)}")
+        return False
+    return False
+
 def test_csrf(api_url):
     """
     Enhanced test for Cross-Site Request Forgery (CSRF) vulnerabilities.
+    This test tries to perform state-changing operations without a CSRF token to see if they are improperly allowed.
 
     Args:
         api_url (str): The URL of the API endpoint to test.
-        
     Returns:
         tuple: A tuple containing the status ('Vulnerable', 'Safe', or 'Error') and a detailed message.
     """
     headers = {'Content-Type': 'application/json'}
-    data = '{"action": "test_csrf"}'
-    cookies = {'sessionid': 'fake-session-id'}
-    methods = ['POST', 'PUT', 'DELETE', 'PATCH']  # Testing multiple methods for CSRF
+    # Assuming a state-changing payload like creating or updating a resource
+    data = '{"action": "update", "data": "test"}'
+    methods = ['POST', 'PUT', 'DELETE', 'PATCH']  # Testing multiple methods that should require CSRF protection
 
     for method in methods:
         try:
-            response = requests.request(method, api_url, headers=headers, data=data, cookies=cookies, timeout=10)
+            # Try the operation without any CSRF token
+            response = requests.request(method, api_url, headers=headers, json=data, timeout=10)
             
-            # Generalized check for CSRF or other authorization failures
-            if response.status_code in [403, 401]:
-                if "csrf" in response.text.lower():
-                    return "Safe", f"CSRF protection detected with {method} method."
-                continue  # Check next method if generic 403/401 without mention of CSRF
+            # Check if the operation is allowed (200 OK or similar successful response)
+            if response.status_code in [200, 201, 204]:
+                return "Vulnerable", f"CSRF protection may be missing or misconfigured. {method} method allowed updating without a CSRF token."
+            elif response.status_code in [403, 401]:
+                # Check response content for any CSRF-specific messages or indicators
+                if "csrf" in response.text.lower() or "cross-site request forgery" in response.text.lower():
+                    continue  # Proper CSRF message found, check next method
+                else:
+                    return "Vulnerable", f"Potential CSRF protection weakness detected. {method} resulted in {response.status_code} without specific CSRF error message."
+            else:
+                # Any other unexpected status code should also be considered
+                return "Vulnerable", f"Unexpected response code {response.status_code} without CSRF protection verification."
 
         except requests.exceptions.RequestException as e:
             return "Error", f"Failed to test {method} due to network or connection error: {str(e)}"
 
-    return "Vulnerable", "CSRF protection is not adequately enabled across methods."
+    return "Safe", "CSRF protection appears to be enabled and effective across all tested methods."
+
     
 def test_command_injection(api_url):
     """
