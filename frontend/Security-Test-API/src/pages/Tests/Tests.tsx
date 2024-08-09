@@ -23,6 +23,8 @@ import {
 	CircularProgress
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material";
+import { Link } from "react-router-dom";
+import { ApiError } from "../../api/types";
 
 const Tests = () => {
 	const [tests, setTests] = useState<ITest[]>([]);
@@ -91,15 +93,9 @@ const Tests = () => {
 	const handleError = (err: unknown) => {
 		if (err instanceof Error) {
 			// Check if it's an Axios error
-			const axiosError = err as any; // Typecasting because AxiosError is not directly available
-			if (
-				axiosError.response &&
-				axiosError.response.data &&
-				axiosError.response.data.detail
-			) {
-				setError(axiosError.response.data.detail);
-			} else {
-				setError(err.message);
+			const error = err as ApiError;
+			if (error.message) {
+				setError(error.message);
 			}
 		} else {
 			setError("An unexpected error occurred.");
@@ -112,6 +108,13 @@ const Tests = () => {
 
 	const handleSnackbarClose = () => {
 		setSnackbarOpen(false);
+	};
+
+	const truncateDetail = (detail: string, maxLength: number = 150): string => {
+		if (detail.length > maxLength) {
+			return `${detail.substring(0, maxLength)}...`; // Truncate and add ellipsis
+		}
+		return detail;
 	};
 
 	if (loading) {
@@ -159,7 +162,17 @@ const Tests = () => {
 								<TableCell>{test.name}</TableCell>
 								<TableCell>{test.description}</TableCell>
 								<TableCell>{result ? result.status : "Not Run"}</TableCell>
-								<TableCell>{result ? result.detail : "-"}</TableCell>
+								<TableCell>
+									{result ? truncateDetail(result.detail, 400) : "-"}
+									{result && result.detail.length > 400 ? (
+										<Typography
+											component="span"
+											style={{ marginLeft: 8, color: "blue" }}
+										>
+											<Link to={`/results`}>See test details</Link>
+										</Typography>
+									) : null}
+								</TableCell>
 								<TableCell>
 									<Button
 										variant="outlined"

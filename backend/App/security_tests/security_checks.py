@@ -243,42 +243,54 @@ def test_csrf(api_url):
     
 def test_command_injection(api_url):
     """
-    Test for Command Injection vulnerabilities.
-    
+    Test for Command Injection vulnerabilities by verifying if specific command outputs are returned in the API response,
+    indicating successful command execution.
+
     Args:
         api_url (str): The URL of the API endpoint to test.
         
     Returns:
-        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
+        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detailed message.
     """
-    # Command injection payloads
+    # Extended list of command injection payloads with expected unique outputs
     payloads = [
-        "; ls",  # Unix
-        "&& dir",  # Windows
-        "| cat /etc/passwd",  # Unix
-        "| whoami",  # Unix
-        "& net user",  # Windows
+        ("; echo unique_output_1", "unique_output_1"),
+        ("&& echo unique_output_2", "unique_output_2"),
+        ("| whoami", "expected_username"),  # Replace 'expected_username' with the actual expected username
+        ("& echo unique_output_4", "unique_output_4"),
+        ("; uname -a", "linux"),  # Expecting a common output that includes 'linux' for Unix systems
+        ("&& type %windir%\\system.ini", "[fonts]"),  # Windows-specific file content
+        ("| ls -la", "total"),  # Output should include 'total' if 'ls' command executes
+        ("; id", "uid="),  # Output for Unix 'id' command
+        ("&& set", "Path="),  # Windows environment variable output
+        ("; ps aux", "root"),  # Output listing processes, typically includes 'root'
+        ("| cat /etc/passwd", "root:x"),  # Reading from the passwd file
+        ("; netstat -an", "Active"),  # Network statistics command
+        ("&& dir", "Volume in drive"),  # Windows directory listing
+        ("| ifconfig", "inet addr:"),  # Network configuration output
+        ("; date", "202"),  # The 'date' command output, assuming it includes the year like '202'
+        ("&& ver", "Microsoft Windows"),  # Windows version
     ]
 
-    # Expected error messages for failed command execution
-    error_indicators = load_data(os.path.join(FILE_DIR, 'command_error_indicators.txt'))
+    # Run tests for both GET and POST methods if applicable
+    for method in ["GET", "POST"]:
+        for payload, expected_output in payloads:
+            try:
+                if method == "GET":
+                    # Encode the payload for URL usage
+                    encoded_payload = quote(payload)
+                    response = requests.get(f"{api_url}?cmd={encoded_payload}", timeout=10)
+                elif method == "POST":
+                    response = requests.post(api_url, json={"cmd": payload}, headers={'Content-Type': 'application/json'}, timeout=10)
 
-    for payload in payloads:
-        try:
-            encoded_payload = quote(payload)
-            
-            # Test GET method
-            if test_get(api_url, "cmd", encoded_payload, error_indicators):
-                return "Vulnerable", f"Command injection might be possible with payload: {payload} using GET"
+                # Check if the specific expected output is part of the response
+                if expected_output in response.text:
+                    return "Vulnerable", f"Command injection might be possible with payload: {payload} using {method}. Expected output detected in response."
 
-            # Test POST method
-            if test_post(api_url, "cmd", encoded_payload, error_indicators):
-                return "Vulnerable", f"Command injection might be possible with payload: {payload} using POST"
+            except requests.exceptions.RequestException as e:
+                return "Error", f"Failed to test due to network or connection error: {str(e)}"
 
-        except requests.exceptions.RequestException as e:
-            return "Error", f"Failed to test due to network or connection error: {str(e)}"
-    
-    return "Safe", "No command injection vulnerabilities detected."
+    return "Safe", "No command injection vulnerabilities detected based on the expected outputs."
     
 def load_credentials(file_path):
     """
@@ -445,14 +457,14 @@ def test_insecure_deserialization(api_url):
 def test_security_misconfiguration(api_url):
     """
     Enhanced test for Security Misconfiguration vulnerabilities.
+    This function tests for exposed sensitive directories and files, and inspects headers for misconfigurations.
     
     Args:
         api_url (str): The URL of the API endpoint to test.
         
     Returns:
-        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
+        tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detailed message.
     """
-    # Extend the list of paths to check for common misconfigurations
     misconfigurations = [
         ('/admin', 'Admin interface exposed'),
         ('/config.php', 'Configuration file exposed'),
@@ -466,19 +478,36 @@ def test_security_misconfiguration(api_url):
         ('/database', 'Database file exposed')
     ]
 
+    vulnerable = []
+    headers_needed = ['X-Frame-Options', 'X-Content-Type-Options', 'Strict-Transport-Security', 'Content-Security-Policy', 'X-XSS-Protection']
+
     for path, description in misconfigurations:
         try:
             full_url = f"{api_url}{path}"
             response = requests.get(full_url)
             
-            # Check for 200 OK, but also other informative status codes
+            # Check for sensitive data exposure or misconfigured access permissions
             if response.status_code == 200:
                 if "Not Found" not in response.text:
-                    return "Vulnerable", f"{description}: {full_url}"
+                    vulnerable.append(f"{description}: {full_url} (200 OK)")
             elif response.status_code in [403, 401]:
-                return "Vulnerable", f"{description} (access restricted but present): {full_url}"
+                vulnerable.append(f"{description} (access restricted but present): {full_url}")
 
         except requests.exceptions.RequestException as e:
             return "Error", f"Failed to test due to network or connection error: {str(e)}"
 
+    # Check for security headers
+    try:
+        headers_response = requests.get(api_url)
+        headers = headers_response.headers
+        missing_headers = [header for header in headers_needed if header not in headers]
+        if missing_headers:
+            vulnerable.append(f"Missing security headers: {', '.join(missing_headers)}")
+        if 'Access-Control-Allow-Origin' in headers and headers['Access-Control-Allow-Origin'] == '*':
+            vulnerable.append("Insecure CORS policy detected: Access-Control-Allow-Origin set to '*'")
+    except requests.exceptions.RequestException as e:
+        return "Error", f"Failed to check headers due to network or connection error: {str(e)}"
+
+    if vulnerable:
+        return "Vulnerable", f"Detected security misconfigurations: {', '.join(vulnerable)}"
     return "Safe", "No security misconfiguration vulnerabilities detected."
