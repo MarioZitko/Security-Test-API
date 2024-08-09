@@ -1,6 +1,6 @@
 # Security Test API
 
-Security Test API is a web application designed for automated testing of security vulnerabilities in web APIs, focusing on the OWASP Top 10 vulnerabilities. The project combines the robust backend capabilities of Flask with the dynamic and interactive user interface provided by React.
+Security Test API is a web application designed for automated testing of security vulnerabilities in web APIs, focusing on the OWASP Top 10 vulnerabilities. The project combines the robust backend capabilities of Django Rest Framework with the dynamic and interactive user interface provided by React.
 
 ## Features
 
@@ -47,7 +47,7 @@ cd backend
 pip install -r requirements.txt
 ```
 
-4. **Running the Flask application**
+4. **Running the Django application**
 
 You can run the application in debug mode using VS Code or manually
 ```
@@ -67,7 +67,7 @@ yarn install
 ```
 yarn dev
 ```
-The application should be accessible at `http://localhost:5157`, while the Flask API is available at `http://localhost:8000`.
+The application should be accessible at `http://localhost:5157`, while the Django API is available at `http://localhost:8000`.
 
 ## Using the Application
 
