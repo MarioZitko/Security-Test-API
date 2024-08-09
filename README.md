@@ -1,26 +1,27 @@
 # Security Test API
 
-Security Test API is a web application designed for automated testing of security vulnerabilities in web APIs, with a focus on OWASP Top 10 vulnerabilities. The project combines the power of Flask for backend logic and React for interactive user interface.
+Security Test API is a web application designed for automated testing of security vulnerabilities in web APIs, focusing on the OWASP Top 10 vulnerabilities. The project combines the robust backend capabilities of Flask with the dynamic and interactive user interface provided by React.
 
 ## Features
 
-- **Automated Vulnerability Testing:** Supports detection of key security vulnerabilities declared in OWASP Top 10.
-- **Interactive User Interface:** Enables users to easily manage tests and review results.
-- **Customizable Tests:** Users can select specific vulnerabilities they want to test.
+- **Automated Vulnerability Testing:** Supports the detection of key security vulnerabilities outlined in the OWASP Top 10.
+- **Interactive User Interface:** Allows users to easily manage tests and review detailed results.
+- **Customizable Tests:** Users can choose specific vulnerabilities they wish to test against their APIs.
 
 ## Getting Started
 
-To run the project locally, follow the instructions below.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-### Requirements
+### Prerequisites
 
 - Python (version 3.x)
 - Node.js and npm
 
 ### Setting Up the Project
 
-1. **Cloning the Repository**
-```
+#### 1. Cloning the Repository
+Clone the repository to your local machine:
+```bash
 git clone https://github.com/MarioZitko/Security-Test-API.git
 cd Security-Test-API
 ```
@@ -47,28 +48,32 @@ pip install -r requirements.txt
 ```
 
 4. **Running the Flask application**
+
+You can run the application in debug mode using VS Code or manually
 ```
-flask run
+cd .\App\
+python manage.py runserver
 ```
 
 5. **Installation of Frontend Dependencies**
 In a new Terminal/Tab:
 ```
 cd frontend
-npm install
+cd .\Security-Test-API\
+yarn install
 ```
 
 6. **Running the React Application**
 ```
-npm start
+yarn dev
 ```
-The application should be accessible at `http://localhost:3000`, while the Flask API is available at `http://localhost:5000`.
+The application should be accessible at `http://localhost:5157`, while the Flask API is available at `http://localhost:8000`.
 
 ## Using the Application
 
-- Open a web browser and visit `http://localhost:3000`.
+- Open a web browser and visit `http://localhost:5157`.
 - Enter the URL of the API you want to test and select the types of vulnerabilities to test.
-- Review the results and recommendations for mitigating the discovered vulnerabilities.
+- Review the results for the discovered vulnerabilities.
 
 ## License
 
