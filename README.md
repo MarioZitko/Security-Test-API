@@ -15,7 +15,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 - Python (version 3.x)
-- Node.js and npm
+- Node.js, npm and yarn
 
 ### Setting Up the Project
 
