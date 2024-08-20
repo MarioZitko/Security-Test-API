@@ -1,7 +1,6 @@
 // src/pages/Dashboard.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import FileDropArea from "../../components/FileDropArea/FileDropArea";
 import Typography from "@mui/material/Typography";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import ApiDetailsModal from "../../components/ApiDetailsModal/ApiDetailsModal";
@@ -34,8 +33,7 @@ const Dashboard: React.FC = () => {
 				setUserLoggedIn(false);
 			}
 		};
-
-		checkUserLoggedIn(); // Call the async function inside useEffect
+		checkUserLoggedIn();
 	});
 
 	const handleTestApi = (url: string) => {
@@ -49,23 +47,13 @@ const Dashboard: React.FC = () => {
 
 	const handleModalSubmit = async (name: string, description: string) => {
 		try {
-			// Post the API details to the backend
-			const response = await apiUrlTestApiClient.createAPI({
-				id: 0,
-				name,
-				url: apiUrl,
-				description,
-				added_by: 1, // Use actual user ID or handle authentication context
-			});
-
+			const response = await apiUrlTestApiClient.createAPI({id: 0, name, url: apiUrl, description, added_by: 1,});
 			// Run all tests after successfully posting API
 			await testsApiClient.runTestsForApi(response.data.id);
-
 			// Redirect to the results page
 			navigate(`/results?apiId=${response.data.id}`);
 		} catch (error) {
 			console.error("Error testing API:", error);
-			// Optionally, show error feedback to the user
 		} finally {
 			setModalOpen(false);
 		}
@@ -77,7 +65,6 @@ const Dashboard: React.FC = () => {
 				<Typography variant="h4" gutterBottom>
 					Dashboard
 				</Typography>
-
 				{/* Display login alert if user is not logged in */}
 				{!userLoggedIn ? (
 					<Box>
@@ -95,8 +82,6 @@ const Dashboard: React.FC = () => {
 				) : (
 					<>
 						<SearchBar onTestApi={handleTestApi} />
-						<FileDropArea />
-
 						{/* API Details Modal */}
 						<ApiDetailsModal
 							open={modalOpen}
