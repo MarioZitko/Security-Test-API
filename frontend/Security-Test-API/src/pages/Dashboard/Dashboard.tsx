@@ -1,11 +1,9 @@
-// src/pages/Dashboard.tsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import ApiDetailsModal from "../../components/ApiDetailsModal/ApiDetailsModal";
 import ApiUrlTestApiClient from "../../api/apiUrlTest/apiUrlTestApi";
-import TestsApiClient from "../../api/tests/testApi";
 import { Alert, Box, Button } from "@mui/material";
 import UsersApiClient from "../../api/users/usersApi";
 
@@ -15,7 +13,6 @@ const Dashboard: React.FC = () => {
 	const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false); // Track user's login status
 	const navigate = useNavigate();
 	const apiUrlTestApiClient = ApiUrlTestApiClient.getInstance();
-	const testsApiClient = TestsApiClient.getInstance();
 	const usersApiClient = UsersApiClient.getInstance();
 
 	useEffect(() => {
@@ -47,11 +44,8 @@ const Dashboard: React.FC = () => {
 
 	const handleModalSubmit = async (name: string, description: string) => {
 		try {
-			const response = await apiUrlTestApiClient.createAPI({id: 0, name, url: apiUrl, description, added_by: 1,});
-			// Run all tests after successfully posting API
-			await testsApiClient.runTestsForApi(response.data.id);
-			// Redirect to the results page
-			navigate(`/results?apiId=${response.data.id}`);
+			await apiUrlTestApiClient.createAPI({id: 0, name, url: apiUrl, description, added_by: 1,});
+			navigate(`/tests`);
 		} catch (error) {
 			console.error("Error testing API:", error);
 		} finally {
