@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    # Možete dodati dodatne polja ako želite
+    # Prostor za dodatna polja
     pass
