@@ -113,7 +113,7 @@ def analyze_response(response, error_indicators):
 
 def test_sql_injection(api_url):
     if not check_api_accessibility(api_url):
-        return "API Unreachable", "Test aborted due to API inaccessibility."
+        return "Error", "Test aborted due to API inaccessibility."
     
     # Load different types of payloads
     payload_types = ['classic', 'time_based', 'union_based', 'boolean', 'waf_bypass', 'comment']
@@ -145,6 +145,9 @@ def test_xss(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detailed message.
     """
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     # Load XSS payloads from a file
     payloads = load_data(os.path.join(FILE_DIR, 'xss_payloads.txt'))
     vulnerabilities = []
@@ -172,6 +175,9 @@ def test_reflected_xss(api_url, payload, error_indicators, param):
     """
     Check if the payload is reflected in the HTML response, indicating potential for DOM-based XSS.
     """
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     try:
         response = requests.get(f"{api_url}/{param}?q={payload}", timeout=10)
         if payload in response.text:
@@ -186,6 +192,9 @@ def test_stored_xss(api_url, payload, error_indicators, param):
     """
     Test if the payload can be stored and then executed on retrieval, indicating stored XSS vulnerability.
     """
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     try:
         # Assuming the API supports a POST that stores data
         post_response = requests.post(f"{api_url}/{param}", data={param: payload}, headers={'Content-Type': 'application/json'}, timeout=10)
@@ -212,6 +221,10 @@ def test_csrf(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable', 'Safe', or 'Error') and a detailed message.
     """
+    
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     headers = {'Content-Type': 'application/json'}
     # Assuming a state-changing payload like creating or updating a resource
     data = '{"action": "update", "data": "test"}'
@@ -252,6 +265,10 @@ def test_command_injection(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detailed message.
     """
+    
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     # Extended list of command injection payloads with expected unique outputs
     payloads = [
         ("; echo unique_output_1", "unique_output_1"),
@@ -324,6 +341,10 @@ def test_broken_authentication(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
+    
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     # Common weak credentials to test
     common_credentials = load_credentials(os.path.join(FILE_DIR, 'common_credentials.txt'))
 
@@ -355,6 +376,10 @@ def test_sensitive_data_exposure(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
+    
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     # Load sensitive data keywords from a file
     sensitive_keywords = load_data(os.path.join(FILE_DIR, 'sensitive_data_indicators.txt'))
     parameters = load_data(os.path.join(FILE_DIR, 'parameters.txt'))
@@ -390,6 +415,10 @@ def test_xxe(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
+    
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     # Load XXE payloads from a file
     xxe_payloads = load_data(os.path.join(FILE_DIR, 'xxe_payloads.txt'))
     headers = {'Content-Type': 'application/xml'}
@@ -423,6 +452,10 @@ def test_insecure_deserialization(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detail message.
     """
+    
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     # Malicious payload for deserialization attack
     payloads = load_data(os.path.join(FILE_DIR, 'deserialization_payloads.txt'))
     headers = {'Content-Type': 'application/octet-stream'}
@@ -465,6 +498,10 @@ def test_security_misconfiguration(api_url):
     Returns:
         tuple: A tuple containing the status ('Vulnerable' or 'Safe') and a detailed message.
     """
+    
+    if not check_api_accessibility(api_url):
+        return "Error", "Test aborted due to API inaccessibility."
+    
     misconfigurations = [
         ('/admin', 'Admin interface exposed'),
         ('/config.php', 'Configuration file exposed'),
