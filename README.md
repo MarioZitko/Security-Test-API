@@ -8,6 +8,14 @@ Security Test API is a web application designed for automated testing of securit
 - **Interactive User Interface:** Allows users to easily manage tests and review detailed results.
 - **Customizable Tests:** Users can choose specific vulnerabilities they wish to test against their APIs.
 
+## Images of the webpage
+
+![Login page](https://ibb.co/mVqLvWqB)
+
+![Testing page](https://ibb.co/xqtK9DZ9)
+
+![Result view](https://ibb.co/RkpGbPdv)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
