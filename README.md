@@ -10,11 +10,11 @@ Security Test API is a web application designed for automated testing of securit
 
 ## Images of the webpage
 
-![Login page](https://ibb.co/mVqLvWqB)
+![Login page](https://i.ibb.co/nNcH3Jc0/sec3.png)
 
-![Testing page](https://ibb.co/xqtK9DZ9)
+![Testing page](https://i.ibb.co/s9dpx27x/sec1.png)
 
-![Result view](https://ibb.co/RkpGbPdv)
+![Result view](https://i.ibb.co/nNsqmftg/sec2.png)
 
 ## Getting Started
 
